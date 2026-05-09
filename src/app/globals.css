@@ -1,0 +1,230 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ─── Theme tokens ──────────────────────────────────── */
+
+:root {
+  /* Light mode (default) */
+  --color-background:    #ffffff;
+  --color-surface:       #f8fafc;
+  --color-surface-raised:#f1f5f9;
+  --color-surface-high:  #e8edf4;
+  --color-border:        #e2e8f0;
+  --color-border-bright: #cbd5e1;
+  --color-foreground:    #0f172a;
+  --color-muted:         #64748b;
+  --color-muted-bright:  #475569;
+  --grid-color:          rgba(0, 0, 0, 0.04);
+  --glow-gold:           rgba(212, 175, 55, 0.07);
+  --glow-green:          rgba(16, 185, 129, 0.05);
+  --glow-blue:           rgba(59, 130, 246, 0.05);
+}
+
+.dark {
+  --color-background:    #050d1a;
+  --color-surface:       #080f1e;
+  --color-surface-raised:#0c1728;
+  --color-surface-high:  #111f36;
+  --color-border:        #1a2d4a;
+  --color-border-bright: #253d5e;
+  --color-foreground:    #e2e8f0;
+  --color-muted:         #4a6080;
+  --color-muted-bright:  #64748b;
+  --grid-color:          rgba(26, 45, 74, 0.15);
+  --glow-gold:           rgba(212, 175, 55, 0.04);
+  --glow-green:          rgba(16, 185, 129, 0.04);
+  --glow-blue:           rgba(59, 130, 246, 0.03);
+}
+
+/* ─── Base ──────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Finance grid background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Atmospheric glow */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% 30%, var(--glow-gold) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 50% at 90% 70%, var(--glow-green) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 40% at 50% 100%, var(--glow-blue) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+main, nav { position: relative; z-index: 1; }
+
+/* ─── Scrollbar ─────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--color-surface); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-border-bright); }
+
+/* ─── Typography helpers ────────────────────────────── */
+
+.gain { color: #10b981; }
+.loss { color: #ef4444; }
+.price-font { font-family: 'JetBrains Mono', monospace; }
+
+.gold-text {
+  background: linear-gradient(135deg, #d4af37 0%, #fbbf24 50%, #d4af37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Cards ─────────────────────────────────────────── */
+
+.glass-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.08);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.dark .glass-card {
+  background: rgba(8, 15, 30, 0.8);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.glass-card:hover {
+  border-color: var(--color-border-bright);
+}
+
+.winner-glow {
+  box-shadow: 0 0 30px rgba(212,175,55,0.15), 0 0 60px rgba(212,175,55,0.05);
+  border-color: rgba(212,175,55,0.3) !important;
+}
+
+.dark .winner-glow {
+  box-shadow: 0 0 30px rgba(212,175,55,0.15), 0 0 60px rgba(212,175,55,0.05), inset 0 1px 0 rgba(212,175,55,0.1);
+}
+
+/* ─── Badges ────────────────────────────────────────── */
+
+.bull-badge {
+  background: rgba(16,185,129,0.12);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: #10b981;
+}
+.bear-badge {
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #ef4444;
+}
+
+/* ─── Form inputs ───────────────────────────────────── */
+
+.finance-input {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  color: var(--color-foreground);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+.finance-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+.finance-input::placeholder { color: var(--color-muted); }
+
+/* ─── Buttons ───────────────────────────────────────── */
+
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #ffffff !important;
+  font-weight: 600;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  transition: all 0.15s;
+  border: 1px solid rgba(59,130,246,0.3);
+  box-shadow: 0 2px 8px rgba(59,130,246,0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 4px 16px rgba(59,130,246,0.3);
+  transform: translateY(-1px);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #d4af37, #fbbf24);
+  color: #050d1a !important;
+  font-weight: 700;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  transition: all 0.15s;
+  box-shadow: 0 2px 12px rgba(212,175,55,0.25);
+}
+.btn-gold:hover {
+  box-shadow: 0 4px 20px rgba(212,175,55,0.4);
+  transform: translateY(-1px);
+}
+
+/* ─── Rank styles ───────────────────────────────────── */
+
+.rank-1 { color: #fbbf24; text-shadow: 0 0 12px rgba(251,191,36,0.5); }
+.rank-2 { color: #94a3b8; }
+.rank-3 { color: #cd7f32; }
+
+/* ─── Skeleton ──────────────────────────────────────── */
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-surface-raised) 50%, var(--color-surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+/* ─── Animations ────────────────────────────────────── */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.75; }
+}
+
+.float-anim   { animation: float 6s ease-in-out infinite; }
+.glow-pulse   { animation: glowPulse 4s ease-in-out infinite; }

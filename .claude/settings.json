@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm start *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/register -H 'Content-Type: application/json' -d '{\"email\":\"demo@test.com\",\"username\":\"demouser\",\"password\":\"demo123\"}')",
+      "Bash(curl -s \"http://localhost:3000/api/stocks/search?q=BMW\")",
+      "Bash(curl -s \"http://localhost:3000/api/stocks/search?q=SAP\")",
+      "Bash(node -e ' *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('version:', d['version']\\)\")",
+      "Bash(curl -s \"http://localhost:3000/api/stocks/search?q=Siemens\")",
+      "Bash(curl -s \"http://localhost:3000/api/stocks/quote?symbol=BMW.DE\")",
+      "Bash(curl -s \"http://localhost:3000/api/stocks/quote?symbol=SAP.DE\")"
+    ],
+    "additionalDirectories": [
+      "/private/tmp"
+    ]
+  }
+}

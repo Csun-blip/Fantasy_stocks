@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  memberships  RoomMember[]
+  trades       Trade[]
+  messages     ChatMessage[]
+  resetTokens  PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Room {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  isPublic     Boolean  @default(true)
+  inviteCode   String   @unique
+  startingCash Float    @default(10000)
+  duration     String   // "1w" | "2w" | "1m" | "3m" | "6m" | "1y" | "2y" | "5y"
+  startsAt     DateTime @default(now())
+  endsAt       DateTime
+  isExpired    Boolean  @default(false)
+  createdById  String
+  createdAt    DateTime @default(now())
+
+  members  RoomMember[]
+  trades   Trade[]
+  messages ChatMessage[]
+}
+
+model RoomMember {
+  id          String   @id @default(cuid())
+  roomId      String
+  userId      String
+  nickname    String?
+  cashBalance Float
+  joinedAt    DateTime @default(now())
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+}
+
+model Trade {
+  id            String   @id @default(cuid())
+  roomId        String
+  userId        String
+  symbol        String
+  companyName   String
+  exchange      String   // "XETRA" | "GETTEX" | "FRANKFURT"
+  action        String   // "BUY" | "SELL"
+  quantity      Int
+  pricePerShare Float
+  totalValue    Float
+  executedAt    DateTime @default(now())
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, userId])
+  @@index([symbol])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, createdAt])
+}
