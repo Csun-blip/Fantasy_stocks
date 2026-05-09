@@ -101,7 +101,7 @@ function SummaryCard({ label, value, colored, positive }: {
   colored: boolean;
   positive?: boolean;
 }) {
-  const valueColor = colored ? (positive ? 'text-success' : 'text-danger') : 'text-white';
+  const valueColor = colored ? (positive ? 'text-success' : 'text-danger') : 'text-foreground';
   return (
     <div className="bg-surface border border-border rounded-2xl p-4">
       <p className="text-xs text-muted mb-1">{label}</p>
