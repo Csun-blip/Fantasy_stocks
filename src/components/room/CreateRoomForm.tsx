@@ -17,6 +17,11 @@ const DURATIONS = [
   { value: '5y', label: '5 Years' },
 ];
 
+const START_OPTIONS = [
+  { value: 'now', label: 'Immediately', desc: 'Room starts as soon as you create it' },
+  { value: 'scheduled', label: 'Scheduled', desc: 'Set a future date for the competition to begin' },
+];
+
 export default function CreateRoomForm() {
   const router = useRouter();
   const [form, setForm] = useState({
@@ -26,19 +31,44 @@ export default function CreateRoomForm() {
     startingCash: 10000,
     duration: '1m',
     nickname: '',
+    startType: 'now',
+    startsAt: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Min datetime for the picker — 5 minutes from now
+  const minDateTime = new Date(Date.now() + 5 * 60 * 1000).toISOString().slice(0, 16);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+
+    if (form.startType === 'scheduled' && !form.startsAt) {
+      setError('Please select a start date and time');
+      return;
+    }
+    if (form.startType === 'scheduled' && new Date(form.startsAt) <= new Date()) {
+      setError('Start time must be in the future');
+      return;
+    }
+
     setLoading(true);
+
+    const body = {
+      name: form.name,
+      description: form.description,
+      isPublic: form.isPublic,
+      startingCash: form.startingCash,
+      duration: form.duration,
+      nickname: form.nickname,
+      startsAt: form.startType === 'scheduled' ? new Date(form.startsAt).toISOString() : null,
+    };
 
     const res = await fetch('/api/rooms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify(body),
     });
 
     const data = await res.json();
@@ -55,7 +85,7 @@ export default function CreateRoomForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       <Input
         label="Room Name"
-        placeholder="e.g. DAX Challenge 2025"
+        placeholder="e.g. S&P 500 Challenge 2025"
         value={form.name}
         onChange={(e) => setForm({ ...form, name: e.target.value })}
         required
@@ -63,7 +93,7 @@ export default function CreateRoomForm() {
       />
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-slate-300">Description (optional)</label>
+        <label className="text-sm font-medium text-muted-bright">Description (optional)</label>
         <textarea
           className="bg-surface-raised border border-border rounded-xl px-4 py-2.5 text-foreground placeholder-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
           placeholder="Add a description for your room..."
@@ -76,7 +106,7 @@ export default function CreateRoomForm() {
 
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-slate-300">Starting Capital</label>
+          <label className="text-sm font-medium text-muted-bright">Starting Capital</label>
           <span className="font-mono text-primary font-semibold">{formatCurrency(form.startingCash)}</span>
         </div>
         <input
@@ -95,7 +125,7 @@ export default function CreateRoomForm() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-slate-300">Duration</label>
+        <label className="text-sm font-medium text-muted-bright">Duration</label>
         <div className="grid grid-cols-4 gap-2">
           {DURATIONS.map((d) => (
             <button
@@ -114,8 +144,47 @@ export default function CreateRoomForm() {
         </div>
       </div>
 
+      {/* Start time */}
       <div className="flex flex-col gap-3">
-        <label className="text-sm font-medium text-slate-300">Visibility</label>
+        <label className="text-sm font-medium text-muted-bright">Competition Start</label>
+        <div className="grid grid-cols-2 gap-3">
+          {START_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setForm({ ...form, startType: opt.value })}
+              className={`flex items-start gap-3 p-4 rounded-xl border text-left transition-all ${
+                form.startType === opt.value
+                  ? 'bg-primary/10 border-primary'
+                  : 'bg-surface-raised border-border hover:border-primary/40'
+              }`}
+            >
+              <span className="text-xl">{opt.value === 'now' ? '⚡' : '📅'}</span>
+              <div>
+                <p className="text-sm font-medium text-foreground">{opt.label}</p>
+                <p className="text-xs text-muted">{opt.desc}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {form.startType === 'scheduled' && (
+          <div className="flex flex-col gap-1.5">
+            <input
+              type="datetime-local"
+              min={minDateTime}
+              value={form.startsAt}
+              onChange={(e) => setForm({ ...form, startsAt: e.target.value })}
+              className="bg-surface-raised border border-border rounded-xl px-4 py-2.5 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+              required={form.startType === 'scheduled'}
+            />
+            <p className="text-xs text-muted">Players can join until this time. Trading starts when the competition begins.</p>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <label className="text-sm font-medium text-muted-bright">Visibility</label>
         <div className="grid grid-cols-2 gap-3">
           {[
             { value: true, label: 'Public', desc: 'Anyone can join', icon: '🌍' },

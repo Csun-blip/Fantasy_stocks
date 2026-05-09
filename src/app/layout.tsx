@@ -4,8 +4,8 @@ import SessionProvider from '@/components/SessionProvider';
 import Navbar from '@/components/Navbar';
 
 export const metadata: Metadata = {
-  title: 'Fantasy Stocks — Trade German Markets Virtually',
-  description: 'Compete with friends using virtual money on real German stock exchange data from Xetra and Gettex. Create rooms, trade live stocks, climb the leaderboard.',
+  title: 'Fantasy Stocks — Trade Stocks & ETFs Virtually',
+  description: 'Compete with friends using virtual money on real global stock market data. Trade US stocks, European equities, ETFs and more. Create rooms, set your timeframe, climb the leaderboard.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

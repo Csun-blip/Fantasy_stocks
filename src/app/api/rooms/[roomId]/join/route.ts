@@ -12,8 +12,12 @@ export async function POST(req: NextRequest, { params }: { params: { roomId: str
   const room = await prisma.room.findUnique({ where: { id: params.roomId } });
   if (!room) return NextResponse.json({ error: 'Room not found' }, { status: 404 });
 
-  if (new Date(room.endsAt) <= new Date()) {
+  const now = new Date();
+  if (new Date(room.endsAt) <= now) {
     return NextResponse.json({ error: 'This room has already ended' }, { status: 400 });
+  }
+  if (new Date(room.startsAt) <= now) {
+    return NextResponse.json({ error: 'This room has already started — no new players can join' }, { status: 400 });
   }
 
   const existing = await prisma.roomMember.findUnique({

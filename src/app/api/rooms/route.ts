@@ -48,13 +48,17 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const { name, description, isPublic, startingCash, duration, nickname } = await req.json();
+    const { name, description, isPublic, startingCash, duration, nickname, startsAt } = await req.json();
 
     if (!name || !duration) return NextResponse.json({ error: 'Name and duration required' }, { status: 400 });
 
     const cash = Math.max(1000, Math.min(100000, Number(startingCash) || 10000));
+    const startTime = startsAt ? new Date(startsAt) : new Date();
+    if (startsAt && startTime <= new Date()) {
+      return NextResponse.json({ error: 'Start time must be in the future' }, { status: 400 });
+    }
     const days = durationToDays(duration);
-    const endsAt = new Date(Date.now() + days * 86400000);
+    const endsAt = new Date(startTime.getTime() + days * 86400000);
 
     // Generate unique invite code
     let inviteCode = generateInviteCode();
@@ -71,6 +75,7 @@ export async function POST(req: NextRequest) {
           inviteCode,
           startingCash: cash,
           duration,
+          startsAt: startTime,
           endsAt,
           createdById: session.user.id,
         },

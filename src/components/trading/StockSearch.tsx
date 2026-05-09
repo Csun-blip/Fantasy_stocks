@@ -10,14 +10,18 @@ interface StockSearchProps {
 const FILTERS = [
   { label: 'All', value: '' },
   { label: 'ETF', value: 'ETF' },
+  { label: 'US', value: 'US' },
   { label: 'Xetra (.DE)', value: '.DE' },
   { label: 'Gettex (.MU)', value: '.MU' },
   { label: 'Frankfurt (.F)', value: '.F' },
 ];
 
+const US_EXCHANGES = new Set(['NMS', 'NGM', 'NYQ', 'PCX', 'ASE', 'NCM']);
+
 function matchesFilter(stock: StockSearchResult, filter: string): boolean {
   if (!filter) return true;
   if (filter === 'ETF') return stock.type === 'ETF';
+  if (filter === 'US') return US_EXCHANGES.has(stock.exchange) && !stock.symbol.includes('.');
   return stock.symbol.endsWith(filter);
 }
 

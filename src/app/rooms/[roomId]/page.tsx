@@ -31,7 +31,10 @@ export default async function RoomPage({ params }: { params: { roomId: string } 
     : false;
 
   const isAdmin = session?.user?.id === room.createdById;
-  const isActive = new Date(room.endsAt) > new Date();
+  const now = new Date();
+  const hasStarted = new Date(room.startsAt) <= now;
+  const isActive = new Date(room.endsAt) > now;
+  const isLobby = isActive && !hasStarted;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
@@ -39,7 +42,9 @@ export default async function RoomPage({ params }: { params: { roomId: string } 
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Badge variant={isActive ? 'green' : 'gray'}>{isActive ? 'Active' : 'Ended'}</Badge>
+            <Badge variant={isLobby ? 'yellow' : isActive ? 'green' : 'gray'}>
+              {isLobby ? 'Lobby' : isActive ? 'Active' : 'Ended'}
+            </Badge>
             {!room.isPublic && <Badge variant="yellow">Private</Badge>}
             {isAdmin && <Badge variant="blue">Admin</Badge>}
           </div>
@@ -48,7 +53,7 @@ export default async function RoomPage({ params }: { params: { roomId: string } 
         </div>
 
         <div className="flex gap-3 shrink-0">
-          {isMember && isActive && (
+          {isMember && isActive && hasStarted && (
             <Link href={`/rooms/${room.id}/trade`} className="btn-primary text-sm">
               Trade Now
             </Link>
@@ -88,7 +93,7 @@ export default async function RoomPage({ params }: { params: { roomId: string } 
         </div>
       </div>
 
-      <RoomNav roomId={room.id} isMember={isMember} />
+      <RoomNav roomId={room.id} isMember={isMember} hasStarted={hasStarted} />
 
       {isActive ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -105,14 +110,28 @@ export default async function RoomPage({ params }: { params: { roomId: string } 
             <div className="bg-surface border border-border rounded-2xl p-5 shadow-card">
               {isMember ? (
                 <>
-                  <h3 className="font-medium text-foreground mb-3">Invite Friends</h3>
-                  <p className="text-xs text-muted-bright mb-3">Share this code to invite others:</p>
-                  <InviteCode code={room.inviteCode} />
+                  <h3 className="font-medium text-foreground mb-3">
+                    {isLobby ? 'Waiting for Start' : 'Invite Friends'}
+                  </h3>
+                  {isLobby ? (
+                    <div className="bg-warning/10 border border-warning/30 rounded-xl p-3 text-sm text-warning mb-3">
+                      Competition starts on {new Date(room.startsAt).toLocaleString()}. Trading will open then.
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-xs text-muted-bright mb-3">Share this code to invite others:</p>
+                      <InviteCode code={room.inviteCode} />
+                    </>
+                  )}
                 </>
               ) : (
                 <>
                   <h3 className="font-medium text-foreground mb-3">Join this room</h3>
-                  {session ? (
+                  {hasStarted ? (
+                    <div className="bg-danger/10 border border-danger/30 rounded-xl p-3 text-sm text-danger">
+                      This competition has already started. No new players can join.
+                    </div>
+                  ) : session ? (
                     <JoinRoomInline roomId={room.id} startingCash={room.startingCash} />
                   ) : (
                     <>

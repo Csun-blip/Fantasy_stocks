@@ -13,7 +13,7 @@ export default function RegisterPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-foreground">Create your account</h1>
-          <p className="text-muted mt-1 text-sm">Start trading German stocks virtually</p>
+          <p className="text-muted mt-1 text-sm">Start trading stocks & ETFs virtually</p>
         </div>
 
         <div className="bg-surface border border-border rounded-2xl p-8">
