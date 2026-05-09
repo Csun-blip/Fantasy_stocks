@@ -1,11 +1,11 @@
-export const dynamic = 'force-dynamic';
-
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import Badge from '@/components/ui/Badge';
+
+export const dynamic = 'force-dynamic';
 import InviteCode from '@/components/room/InviteCode';
 import RoomTimer from '@/components/room/RoomTimer';
 import RoomNav from '@/components/room/RoomNav';
