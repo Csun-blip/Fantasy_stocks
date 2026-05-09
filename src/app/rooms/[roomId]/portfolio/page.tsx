@@ -1,29 +1,37 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import RoomNav from '@/components/room/RoomNav';
 import PortfolioTable from '@/components/trading/PortfolioTable';
+import TradeForm from '@/components/trading/TradeForm';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { formatCurrency, formatPercent } from '@/lib/utils';
-import type { PortfolioSummary } from '@/types';
+import type { PortfolioSummary, Holding } from '@/types';
 
 export default function PortfolioPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sellHolding, setSellHolding] = useState<Holding | null>(null);
 
-  useEffect(() => {
-    fetch(`/api/rooms/${roomId}/portfolio`)
-      .then((r) => r.json())
-      .then((data) => { setPortfolio(data); setLoading(false); });
+  const fetchPortfolio = useCallback(async () => {
+    const res = await fetch(`/api/rooms/${roomId}/portfolio`);
+    if (res.ok) setPortfolio(await res.json());
+    setLoading(false);
   }, [roomId]);
+
+  useEffect(() => { fetchPortfolio(); }, [fetchPortfolio]);
+
+  function handleSellSuccess(newBalance: number) {
+    setPortfolio((prev) => prev ? { ...prev, cashBalance: newBalance } : prev);
+    setTimeout(fetchPortfolio, 500);
+    setSellHolding(null);
+  }
 
   if (loading) return <LoadingSpinner className="py-20" />;
   if (!portfolio) return <div className="text-center py-20 text-muted">Not a member of this room.</div>;
-
-  const gainLossColor = portfolio.totalReturnPercent >= 0 ? 'text-success' : 'text-danger';
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
@@ -51,15 +59,37 @@ export default function PortfolioPage() {
         />
       </div>
 
-      {/* Holdings */}
-      <div className="bg-surface border border-border rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-medium text-foreground">Holdings</h2>
-          <Link href={`/rooms/${roomId}/trade`} className="text-sm text-primary hover:underline">
-            Trade →
-          </Link>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Holdings */}
+        <div className={sellHolding ? 'lg:col-span-2' : 'lg:col-span-3'}>
+          <div className="bg-surface border border-border rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-medium text-foreground">Holdings</h2>
+              <Link href={`/rooms/${roomId}/trade`} className="text-sm text-primary hover:underline">
+                Buy →
+              </Link>
+            </div>
+            <PortfolioTable
+              holdings={portfolio.holdings}
+              canTrade={true}
+              onSell={(h) => setSellHolding(h)}
+            />
+          </div>
         </div>
-        <PortfolioTable holdings={portfolio.holdings} canTrade={false} />
+
+        {/* Sell panel */}
+        {sellHolding && (
+          <div className="lg:col-span-1">
+            <TradeForm
+              roomId={roomId}
+              stock={{ symbol: sellHolding.symbol, name: sellHolding.companyName, exchange: sellHolding.exchange, type: 'EQUITY' }}
+              cashBalance={portfolio.cashBalance}
+              onSuccess={handleSellSuccess}
+              onCancel={() => setSellHolding(null)}
+              ownedShares={sellHolding.quantity}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
