@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { searchGermanStocks } from '@/lib/yahoo-finance';
 
