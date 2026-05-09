@@ -35,7 +35,7 @@ export default async function ChatPage({ params }: { params: { roomId: string } 
         <p className="text-sm text-muted">{room.name}</p>
       </div>
 
-      <RoomNav roomId={params.roomId} isMember={true} />
+      <RoomNav roomId={params.roomId} isMember={true} hasStarted={new Date(room.startsAt) <= new Date()} />
 
       <div className="bg-surface border border-border rounded-2xl overflow-hidden">
         <ChatBox roomId={params.roomId} />

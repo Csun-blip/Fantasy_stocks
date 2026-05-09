@@ -5,22 +5,22 @@ import { usePathname } from 'next/navigation';
 import { useUnreadCount } from '@/hooks/useUnreadCount';
 import { cn } from '@/lib/utils';
 
-export default function RoomNav({ roomId, isMember }: { roomId: string; isMember: boolean }) {
+export default function RoomNav({ roomId, isMember, hasStarted = true }: { roomId: string; isMember: boolean; hasStarted?: boolean }) {
   const pathname = usePathname();
   const unread = useUnreadCount(roomId);
 
   if (!isMember) return null;
 
   const tabs = [
-    { href: `/rooms/${roomId}`, label: 'Leaderboard', badge: 0 },
-    { href: `/rooms/${roomId}/portfolio`, label: 'My Portfolio', badge: 0 },
-    { href: `/rooms/${roomId}/trade`, label: 'Trade', badge: 0 },
-    { href: `/rooms/${roomId}/chat`, label: 'Chat', badge: unread },
+    { href: `/rooms/${roomId}`, label: 'Leaderboard', badge: 0, show: true },
+    { href: `/rooms/${roomId}/portfolio`, label: 'My Portfolio', badge: 0, show: true },
+    { href: `/rooms/${roomId}/trade`, label: 'Trade', badge: 0, show: hasStarted },
+    { href: `/rooms/${roomId}/chat`, label: 'Chat', badge: unread, show: true },
   ];
 
   return (
     <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
-      {tabs.map((tab) => {
+      {tabs.filter((t) => t.show).map((tab) => {
         const active = pathname === tab.href;
         return (
           <Link
