@@ -10,9 +10,19 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { formatCurrency, formatPercent } from '@/lib/utils';
 import type { PortfolioSummary, Holding } from '@/types';
 
+interface PendingOrder {
+  id: string;
+  symbol: string;
+  companyName: string;
+  action: string;
+  quantity: number;
+  createdAt: string;
+}
+
 export default function PortfolioPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
+  const [pendingOrders, setPendingOrders] = useState<PendingOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [sellHolding, setSellHolding] = useState<Holding | null>(null);
 
@@ -22,12 +32,25 @@ export default function PortfolioPage() {
     setLoading(false);
   }, [roomId]);
 
-  useEffect(() => { fetchPortfolio(); }, [fetchPortfolio]);
+  const fetchPending = useCallback(async () => {
+    const res = await fetch(`/api/rooms/${roomId}/pending-orders`);
+    if (res.ok) setPendingOrders(await res.json());
+  }, [roomId]);
+
+  useEffect(() => {
+    fetchPortfolio();
+    fetchPending();
+  }, [fetchPortfolio, fetchPending]);
 
   function handleSellSuccess(newBalance: number) {
     setPortfolio((prev) => prev ? { ...prev, cashBalance: newBalance } : prev);
     setTimeout(fetchPortfolio, 500);
     setSellHolding(null);
+  }
+
+  async function cancelOrder(id: string) {
+    const res = await fetch(`/api/rooms/${roomId}/pending-orders/${id}`, { method: 'DELETE' });
+    if (res.ok) setPendingOrders((prev) => prev.filter((o) => o.id !== id));
   }
 
   if (loading) return <LoadingSpinner className="py-20" />;
@@ -75,6 +98,34 @@ export default function PortfolioPage() {
               onSell={(h) => setSellHolding(h)}
             />
           </div>
+
+          {/* Pending Orders */}
+          {pendingOrders.length > 0 && (
+            <div className="bg-surface border border-border rounded-2xl p-6 mt-4">
+              <h2 className="font-medium text-foreground mb-4">Pending Orders</h2>
+              <div className="flex flex-col gap-2">
+                {pendingOrders.map((order) => (
+                  <div key={order.id} className="flex items-center justify-between bg-surface-raised rounded-xl px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${order.action === 'BUY' ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
+                        {order.action}
+                      </span>
+                      <div>
+                        <p className="font-mono text-sm font-semibold text-foreground">{order.symbol}</p>
+                        <p className="text-xs text-muted">{order.quantity} share{order.quantity !== 1 ? 's' : ''} · queued for market open</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => cancelOrder(order.id)}
+                      className="text-xs text-danger hover:underline"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sell panel */}

@@ -14,10 +14,11 @@ model User {
   passwordHash String
   createdAt    DateTime @default(now())
 
-  memberships  RoomMember[]
-  trades       Trade[]
-  messages     ChatMessage[]
-  resetTokens  PasswordResetToken[]
+  memberships    RoomMember[]
+  trades         Trade[]
+  messages       ChatMessage[]
+  resetTokens    PasswordResetToken[]
+  pendingOrders  PendingOrder[]
 }
 
 model PasswordResetToken {
@@ -44,9 +45,10 @@ model Room {
   createdById  String
   createdAt    DateTime @default(now())
 
-  members  RoomMember[]
-  trades   Trade[]
-  messages ChatMessage[]
+  members        RoomMember[]
+  trades         Trade[]
+  messages       ChatMessage[]
+  pendingOrders  PendingOrder[]
 }
 
 model RoomMember {
@@ -94,4 +96,22 @@ model ChatMessage {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([roomId, createdAt])
+}
+
+model PendingOrder {
+  id          String   @id @default(cuid())
+  roomId      String
+  userId      String
+  symbol      String
+  companyName String
+  exchange    String
+  action      String   // "BUY" | "SELL"
+  quantity    Int
+  createdAt   DateTime @default(now())
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, userId])
+  @@index([createdAt])
 }

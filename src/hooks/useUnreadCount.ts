@@ -38,7 +38,7 @@ export function useUnreadCount(roomId: string) {
 
   useEffect(() => {
     refresh();
-    const interval = setInterval(refresh, 30_000);
+    const interval = setInterval(refresh, 8_000);
     return () => clearInterval(interval);
   }, [refresh]);
 

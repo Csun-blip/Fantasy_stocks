@@ -19,9 +19,6 @@ export async function POST(req: NextRequest) {
   if (new Date(room.endsAt) <= now) {
     return NextResponse.json({ error: 'This room has already ended' }, { status: 400 });
   }
-  if (new Date(room.startsAt) <= now) {
-    return NextResponse.json({ error: 'This room has already started — no new players can join' }, { status: 400 });
-  }
 
   const existing = await prisma.roomMember.findUnique({
     where: { roomId_userId: { roomId: room.id, userId: session.user.id } },

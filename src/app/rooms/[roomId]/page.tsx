@@ -127,12 +127,15 @@ export default async function RoomPage({ params }: { params: { roomId: string } 
               ) : (
                 <>
                   <h3 className="font-medium text-foreground mb-3">Join this room</h3>
-                  {hasStarted ? (
-                    <div className="bg-danger/10 border border-danger/30 rounded-xl p-3 text-sm text-danger">
-                      This competition has already started. No new players can join.
-                    </div>
-                  ) : session ? (
-                    <JoinRoomInline roomId={room.id} startingCash={room.startingCash} />
+                  {session ? (
+                    <>
+                      {hasStarted && (
+                        <div className="bg-warning/10 border border-warning/30 rounded-xl p-3 text-sm text-warning mb-3">
+                          Competition is in progress — you&apos;ll join with {formatCurrency(room.startingCash)} and can start trading immediately.
+                        </div>
+                      )}
+                      <JoinRoomInline roomId={room.id} startingCash={room.startingCash} />
+                    </>
                   ) : (
                     <>
                       <p className="text-sm text-muted-bright mb-4">

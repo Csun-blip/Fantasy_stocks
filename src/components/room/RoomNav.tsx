@@ -19,7 +19,7 @@ export default function RoomNav({ roomId, isMember, hasStarted = true }: { roomI
   ];
 
   return (
-    <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
+    <div className="flex gap-2 mb-6 overflow-x-auto pt-3 pb-2 px-1">
       {tabs.filter((t) => t.show).map((tab) => {
         const active = pathname === tab.href;
         return (
