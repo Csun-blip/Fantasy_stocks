@@ -162,7 +162,7 @@ export default function LandingPage() {
 
       <footer className="border-t border-border py-8 px-4 text-center text-sm text-muted">
         <p>Fantasy Stocks — Virtual trading with real market data. Not financial advice.</p>
-        <p className="mt-1">Data via Yahoo Finance · Prices update every 60 seconds</p>
+        <p className="mt-1">Data via Yahoo Finance · NYSE · NASDAQ · Xetra · Euronext · Prices update every 60 seconds</p>
       </footer>
     </div>
   );
