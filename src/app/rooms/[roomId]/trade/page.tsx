@@ -10,18 +10,7 @@ import PortfolioTable from '@/components/trading/PortfolioTable';
 import PriceChart from '@/components/trading/PriceChart';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { formatCurrency } from '@/lib/utils';
-import type { StockSearchResult, PortfolioSummary, Holding } from '@/types';
-
-interface PendingOrder {
-  id: string;
-  symbol: string;
-  companyName: string;
-  action: string;
-  quantity: number;
-  reservedAmount: number;
-  reservedPrice: number;
-  createdAt: string;
-}
+import type { StockSearchResult, PortfolioSummary, Holding, PendingOrder } from '@/types';
 
 export default function TradePage() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -52,9 +41,9 @@ export default function TradePage() {
     setTimeout(fetchPortfolio, 500);
   }
 
-  function handleQueueSuccess(newBalance: number) {
+  function handlePendingOrderPlaced(order: PendingOrder, newBalance: number) {
+    setPendingOrders((prev) => [...prev, order]);
     setPortfolio((prev) => prev ? { ...prev, cashBalance: newBalance } : prev);
-    fetchPending();
   }
 
   function handleSell(holding: Holding) {
@@ -107,10 +96,8 @@ export default function TradePage() {
               roomId={roomId}
               stock={selectedStock}
               cashBalance={portfolio.cashBalance}
-              onSuccess={(bal) => {
-                handleTradeSuccess(bal);
-                handleQueueSuccess(bal);
-              }}
+              onSuccess={handleTradeSuccess}
+              onPendingOrder={handlePendingOrderPlaced}
               onCancel={() => { setSelectedStock(null); setSellHolding(null); }}
               ownedShares={portfolio.holdings.find((h) => h.symbol === selectedStock.symbol)?.quantity ?? 0}
             />

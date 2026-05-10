@@ -83,6 +83,18 @@ export interface ChatMessageWithUser {
   };
 }
 
+export interface PendingOrder {
+  id: string;
+  symbol: string;
+  companyName: string;
+  exchange: string;
+  action: string;
+  quantity: number;
+  reservedAmount: number;
+  reservedPrice: number;
+  createdAt: string;
+}
+
 export interface PriceHistoryPoint {
   date: string;
   close: number;

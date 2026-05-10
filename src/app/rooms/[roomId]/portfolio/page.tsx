@@ -8,18 +8,7 @@ import PortfolioTable from '@/components/trading/PortfolioTable';
 import TradeForm from '@/components/trading/TradeForm';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { formatCurrency, formatPercent } from '@/lib/utils';
-import type { PortfolioSummary, Holding } from '@/types';
-
-interface PendingOrder {
-  id: string;
-  symbol: string;
-  companyName: string;
-  action: string;
-  quantity: number;
-  reservedAmount: number;
-  reservedPrice: number;
-  createdAt: string;
-}
+import type { PortfolioSummary, Holding, PendingOrder } from '@/types';
 
 export default function PortfolioPage() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -47,6 +36,12 @@ export default function PortfolioPage() {
   function handleSellSuccess(newBalance: number) {
     setPortfolio((prev) => prev ? { ...prev, cashBalance: newBalance } : prev);
     setTimeout(fetchPortfolio, 500);
+    setSellHolding(null);
+  }
+
+  function handlePendingOrderPlaced(order: PendingOrder, newBalance: number) {
+    setPendingOrders((prev) => [...prev, order]);
+    setPortfolio((prev) => prev ? { ...prev, cashBalance: newBalance } : prev);
     setSellHolding(null);
   }
 
@@ -141,6 +136,7 @@ export default function PortfolioPage() {
               stock={{ symbol: sellHolding.symbol, name: sellHolding.companyName, exchange: sellHolding.exchange, type: 'EQUITY' }}
               cashBalance={portfolio.cashBalance}
               onSuccess={handleSellSuccess}
+              onPendingOrder={handlePendingOrderPlaced}
               onCancel={() => setSellHolding(null)}
               ownedShares={sellHolding.quantity}
             />

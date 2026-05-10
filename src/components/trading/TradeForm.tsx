@@ -3,18 +3,19 @@
 import { useState, useEffect } from 'react';
 import Button from '@/components/ui/Button';
 import { formatCurrency } from '@/lib/utils';
-import type { StockQuote, StockSearchResult } from '@/types';
+import type { StockQuote, StockSearchResult, PendingOrder } from '@/types';
 
 interface TradeFormProps {
   roomId: string;
   stock: StockSearchResult;
   cashBalance: number;
   onSuccess: (newBalance: number) => void;
+  onPendingOrder?: (order: PendingOrder, newBalance: number) => void;
   onCancel: () => void;
   ownedShares?: number;
 }
 
-export default function TradeForm({ roomId, stock, cashBalance, onSuccess, onCancel, ownedShares = 0 }: TradeFormProps) {
+export default function TradeForm({ roomId, stock, cashBalance, onSuccess, onPendingOrder, onCancel, ownedShares = 0 }: TradeFormProps) {
   const [action, setAction] = useState<'BUY' | 'SELL'>('BUY');
   const [quantityStr, setQuantityStr] = useState('1');
   const [quote, setQuote] = useState<StockQuote | null>(null);
@@ -99,7 +100,11 @@ export default function TradeForm({ roomId, stock, cashBalance, onSuccess, onCan
       setError(data.error || 'Failed to queue order');
     } else {
       setSuccess(`Order queued. Will execute when the market opens for ${stock.symbol}.`);
-      onSuccess(cashBalance);
+      if (onPendingOrder) {
+        onPendingOrder(data.order, data.newCashBalance);
+      } else {
+        onSuccess(data.newCashBalance ?? cashBalance);
+      }
       setQuantityStr('1');
     }
   }

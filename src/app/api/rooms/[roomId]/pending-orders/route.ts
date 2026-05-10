@@ -168,12 +168,15 @@ export async function POST(req: NextRequest, { params }: { params: { roomId: str
     }
   }
 
+  let newCashBalance = member.cashBalance;
+
   const order = await prisma.$transaction(async (tx) => {
     if (action === 'BUY') {
-      await tx.roomMember.update({
+      const updated = await tx.roomMember.update({
         where: { roomId_userId: { roomId: params.roomId, userId: session.user.id } },
         data: { cashBalance: { decrement: reservedAmount } },
       });
+      newCashBalance = updated.cashBalance;
     }
 
     return tx.pendingOrder.create({
@@ -191,5 +194,5 @@ export async function POST(req: NextRequest, { params }: { params: { roomId: str
     });
   });
 
-  return NextResponse.json(order, { status: 201 });
+  return NextResponse.json({ order, newCashBalance }, { status: 201 });
 }

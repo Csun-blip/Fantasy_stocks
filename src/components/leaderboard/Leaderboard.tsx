@@ -30,7 +30,7 @@ export default function Leaderboard({ roomId }: { roomId: string }) {
 
   useEffect(() => {
     fetchLeaderboard();
-    const interval = setInterval(fetchLeaderboard, 60000);
+    const interval = setInterval(fetchLeaderboard, 30000);
     return () => clearInterval(interval);
   }, [roomId]);
 
