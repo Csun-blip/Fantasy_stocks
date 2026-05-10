@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getStockQuote } from '@/lib/yahoo-finance';
+import { computeHoldingsFromTrades } from '@/lib/portfolio';
 import { symbolToExchange } from '@/lib/utils';
 
 export async function GET(_req: NextRequest, { params }: { params: { roomId: string } }) {
@@ -15,7 +17,85 @@ export async function GET(_req: NextRequest, { params }: { params: { roomId: str
     orderBy: { createdAt: 'asc' },
   });
 
-  return NextResponse.json(orders);
+  // Try to execute any orders where market is now open
+  for (const order of orders) {
+    const quote = await getStockQuote(order.symbol);
+    if (!quote || quote.marketState !== 'REGULAR') continue;
+
+    const member = await prisma.roomMember.findUnique({
+      where: { roomId_userId: { roomId: params.roomId, userId: session.user.id } },
+    });
+    if (!member) continue;
+
+    const pricePerShare = quote.price;
+    const totalValue = pricePerShare * order.quantity;
+
+    if (order.action === 'BUY') {
+      if (member.cashBalance < totalValue) {
+        await prisma.pendingOrder.delete({ where: { id: order.id } });
+        continue;
+      }
+      await prisma.$transaction([
+        prisma.trade.create({
+          data: {
+            roomId: params.roomId,
+            userId: session.user.id,
+            symbol: order.symbol,
+            companyName: order.companyName,
+            exchange: order.exchange,
+            action: 'BUY',
+            quantity: order.quantity,
+            pricePerShare,
+            totalValue,
+          },
+        }),
+        prisma.roomMember.update({
+          where: { roomId_userId: { roomId: params.roomId, userId: session.user.id } },
+          data: { cashBalance: { decrement: totalValue } },
+        }),
+        prisma.pendingOrder.delete({ where: { id: order.id } }),
+      ]);
+    } else {
+      const trades = await prisma.trade.findMany({
+        where: { roomId: params.roomId, userId: session.user.id },
+        orderBy: { executedAt: 'asc' },
+      });
+      const holdings = computeHoldingsFromTrades(trades);
+      const holding = holdings.find((h) => h.symbol === order.symbol);
+      if (!holding || holding.quantity < order.quantity) {
+        await prisma.pendingOrder.delete({ where: { id: order.id } });
+        continue;
+      }
+      await prisma.$transaction([
+        prisma.trade.create({
+          data: {
+            roomId: params.roomId,
+            userId: session.user.id,
+            symbol: order.symbol,
+            companyName: order.companyName,
+            exchange: order.exchange,
+            action: 'SELL',
+            quantity: order.quantity,
+            pricePerShare,
+            totalValue,
+          },
+        }),
+        prisma.roomMember.update({
+          where: { roomId_userId: { roomId: params.roomId, userId: session.user.id } },
+          data: { cashBalance: { increment: totalValue } },
+        }),
+        prisma.pendingOrder.delete({ where: { id: order.id } }),
+      ]);
+    }
+  }
+
+  // Return remaining (unexecuted) orders
+  const remaining = await prisma.pendingOrder.findMany({
+    where: { roomId: params.roomId, userId: session.user.id },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  return NextResponse.json(remaining);
 }
 
 export async function POST(req: NextRequest, { params }: { params: { roomId: string } }) {
