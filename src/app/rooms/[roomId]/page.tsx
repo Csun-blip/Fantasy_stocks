@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic';
 import InviteCode from '@/components/room/InviteCode';
 import RoomTimer from '@/components/room/RoomTimer';
 import RoomNav from '@/components/room/RoomNav';
+import RoomStartWatcher from '@/components/room/RoomStartWatcher';
 import RoomHistory from '@/components/room/RoomHistory';
 import Leaderboard from '@/components/leaderboard/Leaderboard';
 import JoinRoomInline from '@/components/room/JoinRoomInline';
@@ -93,6 +94,7 @@ export default async function RoomPage({ params }: { params: { roomId: string } 
         </div>
       </div>
 
+      <RoomStartWatcher startsAt={room.startsAt.toISOString()} />
       <RoomNav roomId={room.id} isMember={isMember} hasStarted={hasStarted} />
 
       {isActive ? (
