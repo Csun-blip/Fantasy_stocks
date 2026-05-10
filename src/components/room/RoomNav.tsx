@@ -14,7 +14,7 @@ export default function RoomNav({ roomId, isMember, hasStarted = true }: { roomI
   const tabs = [
     { href: `/rooms/${roomId}`, label: 'Leaderboard', badge: 0, show: true },
     { href: `/rooms/${roomId}/portfolio`, label: 'My Portfolio', badge: 0, show: true },
-    { href: `/rooms/${roomId}/trade`, label: 'Trade', badge: 0, show: hasStarted },
+    { href: `/rooms/${roomId}/trade`, label: 'Trade', badge: 0, show: true },
     { href: `/rooms/${roomId}/chat`, label: 'Chat', badge: unread, show: true },
   ];
 

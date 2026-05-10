@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import SessionProvider from '@/components/SessionProvider';
 import Navbar from '@/components/Navbar';
+import TourGuide from '@/components/tour/TourGuide';
 
 export const metadata: Metadata = {
   title: 'Fantasy Stocks | Trade Stocks and ETFs Virtually',
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           <Navbar />
+          <TourGuide />
           <main className="pt-16 relative z-10">{children}</main>
         </SessionProvider>
       </body>

@@ -40,6 +40,17 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.dispatchEvent(new Event('open-tour'))}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-muted-bright hover:text-foreground hover:bg-surface-raised transition-colors"
+              title="How to use Fantasy Stocks"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <circle cx="12" cy="12" r="10" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-4m0-4h.01" />
+              </svg>
+              How to Play
+            </button>
             <ThemeToggle />
             {session ? (
               <div className="relative">
