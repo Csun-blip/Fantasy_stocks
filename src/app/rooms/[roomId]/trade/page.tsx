@@ -18,6 +18,8 @@ interface PendingOrder {
   companyName: string;
   action: string;
   quantity: number;
+  reservedAmount: number;
+  reservedPrice: number;
   createdAt: string;
 }
 
@@ -133,7 +135,10 @@ export default function TradePage() {
                       </span>
                       <div>
                         <p className="font-mono text-sm font-semibold text-foreground">{order.symbol}</p>
-                        <p className="text-xs text-muted">{order.quantity} share{order.quantity !== 1 ? 's' : ''}, pending market open</p>
+                        <p className="text-xs text-muted">
+                          {order.quantity} share{order.quantity !== 1 ? 's' : ''} at {formatCurrency(order.reservedPrice)}
+                          {order.action === 'BUY' && ` · ${formatCurrency(order.reservedAmount)} reserved`}
+                        </p>
                       </div>
                     </div>
                     <button onClick={() => cancelOrder(order.id)} className="text-xs text-danger hover:underline">

@@ -16,6 +16,8 @@ interface PendingOrder {
   companyName: string;
   action: string;
   quantity: number;
+  reservedAmount: number;
+  reservedPrice: number;
   createdAt: string;
 }
 
@@ -112,7 +114,10 @@ export default function PortfolioPage() {
                       </span>
                       <div>
                         <p className="font-mono text-sm font-semibold text-foreground">{order.symbol}</p>
-                        <p className="text-xs text-muted">{order.quantity} share{order.quantity !== 1 ? 's' : ''} · queued for market open</p>
+                        <p className="text-xs text-muted">
+                          {order.quantity} share{order.quantity !== 1 ? 's' : ''} at {formatCurrency(order.reservedPrice)} each
+                          {order.action === 'BUY' && ` · ${formatCurrency(order.reservedAmount)} reserved`}
+                        </p>
                       </div>
                     </div>
                     <button

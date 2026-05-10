@@ -17,7 +17,7 @@ export async function GET(_req: NextRequest, { params }: { params: { roomId: str
     orderBy: { createdAt: 'asc' },
   });
 
-  // Try to execute any orders where market is now open
+  // Execute any orders where the market is now open
   for (const order of orders) {
     const quote = await getStockQuote(order.symbol);
     if (!quote || quote.marketState !== 'REGULAR') continue;
@@ -27,14 +27,25 @@ export async function GET(_req: NextRequest, { params }: { params: { roomId: str
     });
     if (!member) continue;
 
-    const pricePerShare = quote.price;
-    const totalValue = pricePerShare * order.quantity;
+    const actualPrice = quote.price;
+    const actualCost = actualPrice * order.quantity;
 
     if (order.action === 'BUY') {
-      if (member.cashBalance < totalValue) {
-        await prisma.pendingOrder.delete({ where: { id: order.id } });
+      // Cash was already reserved. Adjust for price difference.
+      const priceDiff = actualCost - order.reservedAmount;
+
+      if (priceDiff > 0 && member.cashBalance < priceDiff) {
+        // Price went up and user can't cover the difference — cancel and refund reservation
+        await prisma.$transaction([
+          prisma.roomMember.update({
+            where: { roomId_userId: { roomId: params.roomId, userId: session.user.id } },
+            data: { cashBalance: { increment: order.reservedAmount } },
+          }),
+          prisma.pendingOrder.delete({ where: { id: order.id } }),
+        ]);
         continue;
       }
+
       await prisma.$transaction([
         prisma.trade.create({
           data: {
@@ -45,27 +56,31 @@ export async function GET(_req: NextRequest, { params }: { params: { roomId: str
             exchange: order.exchange,
             action: 'BUY',
             quantity: order.quantity,
-            pricePerShare,
-            totalValue,
+            pricePerShare: actualPrice,
+            totalValue: actualCost,
           },
         }),
+        // Adjust cash: deduct extra if price rose, refund if price dropped
         prisma.roomMember.update({
           where: { roomId_userId: { roomId: params.roomId, userId: session.user.id } },
-          data: { cashBalance: { decrement: totalValue } },
+          data: { cashBalance: { decrement: priceDiff } },
         }),
         prisma.pendingOrder.delete({ where: { id: order.id } }),
       ]);
     } else {
+      // SELL — check shares still available
       const trades = await prisma.trade.findMany({
         where: { roomId: params.roomId, userId: session.user.id },
         orderBy: { executedAt: 'asc' },
       });
       const holdings = computeHoldingsFromTrades(trades);
       const holding = holdings.find((h) => h.symbol === order.symbol);
+
       if (!holding || holding.quantity < order.quantity) {
         await prisma.pendingOrder.delete({ where: { id: order.id } });
         continue;
       }
+
       await prisma.$transaction([
         prisma.trade.create({
           data: {
@@ -76,20 +91,19 @@ export async function GET(_req: NextRequest, { params }: { params: { roomId: str
             exchange: order.exchange,
             action: 'SELL',
             quantity: order.quantity,
-            pricePerShare,
-            totalValue,
+            pricePerShare: actualPrice,
+            totalValue: actualCost,
           },
         }),
         prisma.roomMember.update({
           where: { roomId_userId: { roomId: params.roomId, userId: session.user.id } },
-          data: { cashBalance: { increment: totalValue } },
+          data: { cashBalance: { increment: actualCost } },
         }),
         prisma.pendingOrder.delete({ where: { id: order.id } }),
       ]);
     }
   }
 
-  // Return remaining (unexecuted) orders
   const remaining = await prisma.pendingOrder.findMany({
     where: { roomId: params.roomId, userId: session.user.id },
     orderBy: { createdAt: 'asc' },
@@ -124,16 +138,57 @@ export async function POST(req: NextRequest, { params }: { params: { roomId: str
   });
   if (!member) return NextResponse.json({ error: 'Not a member of this room' }, { status: 403 });
 
-  const order = await prisma.pendingOrder.create({
-    data: {
-      roomId: params.roomId,
-      userId: session.user.id,
-      symbol,
-      companyName: companyName || symbol,
-      exchange: symbolToExchange(symbol),
-      action,
-      quantity: qty,
-    },
+  // Fetch current (last known) price for reservation
+  const quote = await getStockQuote(symbol);
+  if (!quote) return NextResponse.json({ error: 'Could not fetch stock price' }, { status: 503 });
+
+  const reservedPrice = quote.price;
+  const reservedAmount = action === 'BUY' ? reservedPrice * qty : 0;
+
+  if (action === 'BUY') {
+    if (member.cashBalance < reservedAmount) {
+      return NextResponse.json(
+        { error: `Insufficient funds. Need ${reservedAmount.toFixed(2)}, have ${member.cashBalance.toFixed(2)}` },
+        { status: 400 }
+      );
+    }
+  } else {
+    // SELL — validate shares exist
+    const trades = await prisma.trade.findMany({
+      where: { roomId: params.roomId, userId: session.user.id },
+      orderBy: { executedAt: 'asc' },
+    });
+    const holdings = computeHoldingsFromTrades(trades);
+    const holding = holdings.find((h) => h.symbol === symbol);
+    if (!holding || holding.quantity < qty) {
+      return NextResponse.json(
+        { error: `You only own ${holding?.quantity ?? 0} shares of ${symbol}` },
+        { status: 400 }
+      );
+    }
+  }
+
+  const order = await prisma.$transaction(async (tx) => {
+    if (action === 'BUY') {
+      await tx.roomMember.update({
+        where: { roomId_userId: { roomId: params.roomId, userId: session.user.id } },
+        data: { cashBalance: { decrement: reservedAmount } },
+      });
+    }
+
+    return tx.pendingOrder.create({
+      data: {
+        roomId: params.roomId,
+        userId: session.user.id,
+        symbol,
+        companyName: companyName || symbol,
+        exchange: symbolToExchange(symbol),
+        action,
+        quantity: qty,
+        reservedAmount,
+        reservedPrice,
+      },
+    });
   });
 
   return NextResponse.json(order, { status: 201 });

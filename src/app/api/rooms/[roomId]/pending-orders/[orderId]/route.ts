@@ -16,6 +16,16 @@ export async function DELETE(
   if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
   if (order.userId !== session.user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  await prisma.pendingOrder.delete({ where: { id: params.orderId } });
-  return NextResponse.json({ success: true });
+  await prisma.$transaction(async (tx) => {
+    // Refund reserved cash for BUY orders
+    if (order.action === 'BUY' && order.reservedAmount > 0) {
+      await tx.roomMember.update({
+        where: { roomId_userId: { roomId: params.roomId, userId: session.user.id } },
+        data: { cashBalance: { increment: order.reservedAmount } },
+      });
+    }
+    await tx.pendingOrder.delete({ where: { id: params.orderId } });
+  });
+
+  return NextResponse.json({ success: true, refunded: order.reservedAmount });
 }
