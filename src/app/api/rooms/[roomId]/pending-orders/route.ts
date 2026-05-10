@@ -12,13 +12,17 @@ export async function GET(_req: NextRequest, { params }: { params: { roomId: str
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const room = await prisma.room.findUnique({ where: { id: params.roomId } });
+  const roomStarted = room && new Date(room.startsAt) <= new Date();
+
   const orders = await prisma.pendingOrder.findMany({
     where: { roomId: params.roomId, userId: session.user.id },
     orderBy: { createdAt: 'asc' },
   });
 
-  // Execute any orders where the market is now open
+  // Execute any orders where the market is now open and the room has started
   for (const order of orders) {
+    if (!roomStarted) continue;
     const quote = await getStockQuote(order.symbol);
     if (!quote || quote.marketState !== 'REGULAR') continue;
 
@@ -131,7 +135,6 @@ export async function POST(req: NextRequest, { params }: { params: { roomId: str
 
   const now = new Date();
   if (new Date(room.endsAt) <= now) return NextResponse.json({ error: 'Room has ended' }, { status: 400 });
-  if (new Date(room.startsAt) > now) return NextResponse.json({ error: 'Room has not started yet' }, { status: 400 });
 
   const member = await prisma.roomMember.findUnique({
     where: { roomId_userId: { roomId: params.roomId, userId: session.user.id } },
