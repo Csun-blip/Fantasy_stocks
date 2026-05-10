@@ -22,11 +22,11 @@ function IllWelcome() {
         {[
           { label: 'Portfolio', value: '$18,240', color: 'text-white' },
           { label: 'Return', value: '+12.4%', color: 'text-green-400' },
-          { label: 'Rank', value: '1 / 8', color: 'text-yellow-400' },
+          { label: 'Rank', value: '#1', color: 'text-yellow-400' },
         ].map((s) => (
-          <div key={s.label} className="bg-white/10 backdrop-blur rounded-xl px-3 py-2 text-center border border-white/10">
-            <p className="text-white/50 text-[8px] uppercase tracking-wide mb-0.5">{s.label}</p>
-            <p className={cn('font-bold text-sm font-mono', s.color)}>{s.value}</p>
+          <div key={s.label} className="bg-white/10 backdrop-blur rounded-xl px-3 py-2.5 text-center border border-white/10 min-w-[64px]">
+            <p className="text-white/50 text-[8px] uppercase tracking-wide mb-1">{s.label}</p>
+            <p className={cn('font-bold text-sm font-mono leading-none', s.color)}>{s.value}</p>
           </div>
         ))}
       </div>
@@ -140,7 +140,7 @@ function IllTrade() {
           <svg className="w-3.5 h-3.5 text-white/40 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
           </svg>
-          <p className="text-white/70 text-xs">AAPL — Apple Inc.</p>
+          <p className="text-white/70 text-xs">AAPL · Apple Inc.</p>
         </div>
         <div className="mt-2.5 flex justify-between items-center">
           <p className="text-white/40 text-[10px]">Current Price</p>
@@ -309,7 +309,7 @@ const STEPS: Step[] = [
     emoji: '👋',
     label: 'Welcome',
     title: 'Welcome to Fantasy Stocks!',
-    desc: 'Compete with friends using real stock market data and virtual money. Build the best portfolio, climb the leaderboard, and prove your trading skills — no real money ever at risk.',
+    desc: 'Compete with friends using real stock market data and virtual money. Build the best portfolio, climb the leaderboard, and prove your trading skills. No real money ever at risk.',
     bg: '#0a1628', glow: '#1a4a80',
     Ill: IllWelcome,
   },
@@ -325,7 +325,7 @@ const STEPS: Step[] = [
     emoji: '🔗',
     label: 'Invite Friends',
     title: 'Invite Your Friends',
-    desc: 'Every room gets a unique invite code. Share it with friends and they can join instantly. You can also browse and join any public room from the Rooms page — even ones that are already in progress.',
+    desc: 'Every room gets a unique invite code. Share it with friends and they can join instantly. You can also browse and join any public room from the Rooms page, even ones already in progress.',
     bg: '#18103d', glow: '#4020a0',
     Ill: IllInvite,
   },
@@ -333,7 +333,7 @@ const STEPS: Step[] = [
     emoji: '🏆',
     label: 'Leaderboard',
     title: 'Track Live Rankings',
-    desc: "The room's main page shows a live leaderboard ranked by total portfolio return. The more your stocks gain, the higher you climb. Refresh or wait — it updates automatically.",
+    desc: "The room's main page shows a live leaderboard ranked by total portfolio return. The more your stocks gain, the higher you climb. It updates automatically.",
     bg: '#251500', glow: '#805010',
     Ill: IllLeaderboard,
   },
@@ -365,7 +365,7 @@ const STEPS: Step[] = [
     emoji: '💬',
     label: 'Chat',
     title: 'Chat with Other Players',
-    desc: "Use the Chat tab to talk strategy — or trash-talk — with everyone in the room. A red badge on the Chat tab shows how many unread messages you have so you never miss a thing.",
+    desc: "Use the Chat tab to talk strategy (or trash-talk) with everyone in the room. A red badge on the Chat tab shows how many unread messages you have so you never miss a thing.",
     bg: '#0d1245', glow: '#2035a0',
     Ill: IllChat,
   },
