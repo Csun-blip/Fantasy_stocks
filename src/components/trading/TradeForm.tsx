@@ -26,6 +26,12 @@ export default function TradeForm({ roomId, stock, cashBalance, onSuccess, onCan
   const quantity = Math.max(1, parseInt(quantityStr) || 1);
   const isMarketOpen = quote?.marketState === 'REGULAR';
 
+  function marketStateLabel(state: string): string {
+    if (state === 'PRE') return 'in pre-market hours';
+    if (state === 'POST') return 'in after-hours trading';
+    return 'closed';
+  }
+
   useEffect(() => {
     async function fetchQuote() {
       setQuoteLoading(true);
@@ -92,7 +98,7 @@ export default function TradeForm({ roomId, stock, cashBalance, onSuccess, onCan
     if (!res.ok) {
       setError(data.error || 'Failed to queue order');
     } else {
-      setSuccess(`Order queued — will execute when ${stock.symbol} market opens`);
+      setSuccess(`Order queued. Will execute when the market opens for ${stock.symbol}.`);
       onSuccess(cashBalance);
       setQuantityStr('1');
     }
@@ -127,7 +133,7 @@ export default function TradeForm({ roomId, stock, cashBalance, onSuccess, onCan
 
           {!isMarketOpen && (
             <div className="bg-warning/10 border border-warning/30 rounded-xl px-4 py-3 text-sm text-warning">
-              Market is currently <strong>{quote.marketState}</strong> — orders will be queued and executed automatically when the market opens.
+              Market is currently <strong>{marketStateLabel(quote.marketState ?? 'closed')}</strong>. Orders will be queued and executed automatically when the market opens.
             </div>
           )}
         </>

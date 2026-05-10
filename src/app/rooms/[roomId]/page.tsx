@@ -131,7 +131,7 @@ export default async function RoomPage({ params }: { params: { roomId: string } 
                     <>
                       {hasStarted && (
                         <div className="bg-warning/10 border border-warning/30 rounded-xl p-3 text-sm text-warning mb-3">
-                          Competition is in progress — you&apos;ll join with {formatCurrency(room.startingCash)} and can start trading immediately.
+                          Competition is in progress. You will join with {formatCurrency(room.startingCash)} and can start trading immediately.
                         </div>
                       )}
                       <JoinRoomInline roomId={room.id} startingCash={room.startingCash} />

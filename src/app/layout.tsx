@@ -4,7 +4,7 @@ import SessionProvider from '@/components/SessionProvider';
 import Navbar from '@/components/Navbar';
 
 export const metadata: Metadata = {
-  title: 'Fantasy Stocks — Trade Stocks & ETFs Virtually',
+  title: 'Fantasy Stocks | Trade Stocks and ETFs Virtually',
   description: 'Compete with friends using virtual money on real global stock market data. Trade US stocks, European equities, ETFs and more. Create rooms, set your timeframe, climb the leaderboard.',
 };
 

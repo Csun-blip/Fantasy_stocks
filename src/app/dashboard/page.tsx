@@ -8,7 +8,7 @@ import Link from 'next/link';
 import RoomCard from '@/components/room/RoomCard';
 import { formatCurrency } from '@/lib/utils';
 
-export const metadata = { title: 'Dashboard — Fantasy Stocks' };
+export const metadata = { title: 'Dashboard | Fantasy Stocks' };
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);

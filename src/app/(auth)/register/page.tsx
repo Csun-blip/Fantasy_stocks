@@ -1,6 +1,6 @@
 import RegisterForm from '@/components/auth/RegisterForm';
 
-export const metadata = { title: 'Create Account — Fantasy Stocks' };
+export const metadata = { title: 'Create Account | Fantasy Stocks' };
 
 export default function RegisterPage() {
   return (

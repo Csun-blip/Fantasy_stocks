@@ -1,6 +1,6 @@
 import LoginForm from '@/components/auth/LoginForm';
 
-export const metadata = { title: 'Log In — Fantasy Stocks' };
+export const metadata = { title: 'Log In | Fantasy Stocks' };
 
 export default function LoginPage() {
   return (

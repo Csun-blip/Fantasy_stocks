@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import CreateRoomForm from '@/components/room/CreateRoomForm';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Create Room — Fantasy Stocks' };
+export const metadata = { title: 'Create Room | Fantasy Stocks' };
 
 export default async function CreateRoomPage() {
   const session = await getServerSession(authOptions);

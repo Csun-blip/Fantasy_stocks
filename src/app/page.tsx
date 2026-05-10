@@ -4,7 +4,7 @@ const FEATURES = [
   {
     icon: '📈',
     title: 'Global Market Data',
-    desc: 'Live prices for stocks, ETFs and indices worldwide — US, European, and more — powered by Yahoo Finance.',
+    desc: 'Live prices for stocks, ETFs and indices worldwide. US, European and more, powered by Yahoo Finance.',
   },
   {
     icon: '🏆',
@@ -161,7 +161,7 @@ export default function LandingPage() {
       </section>
 
       <footer className="border-t border-border py-8 px-4 text-center text-sm text-muted">
-        <p>Fantasy Stocks — Virtual trading with real market data. Not financial advice.</p>
+        <p>Fantasy Stocks: Virtual trading with real market data. Not financial advice.</p>
         <p className="mt-1">Data via Yahoo Finance · NYSE · NASDAQ · Xetra · Euronext · Prices update every 60 seconds</p>
       </footer>
     </div>
