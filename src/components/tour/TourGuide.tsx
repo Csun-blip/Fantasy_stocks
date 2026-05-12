@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
-const DONE_KEY = 'fs_tour_v1';
+const DONE_KEY = 'fs_tour_v2';
 
 // ─── Illustrations ────────────────────────────────────────────────────────────
 
@@ -270,6 +270,69 @@ function IllChat() {
   );
 }
 
+function IllStopLoss() {
+  return (
+    <div className="flex flex-col gap-2.5 w-full max-w-[210px] mx-auto">
+      <div className="bg-white/10 rounded-2xl p-3 border border-white/10">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-6 h-6 rounded-lg bg-orange-500/30 flex items-center justify-center shrink-0">
+            <p className="text-orange-300 text-[9px] font-black">SL</p>
+          </div>
+          <div>
+            <p className="text-white text-xs font-semibold">Stop Loss — TSLA</p>
+            <p className="text-white/40 text-[9px]">Auto-sell to limit losses</p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          {[{ l: 'Trigger at', v: '-10%' }, { l: 'Sell qty', v: 'All' }].map((f) => (
+            <div key={f.l} className="bg-white/8 rounded-xl p-2 border border-white/8 flex-1 text-center">
+              <p className="text-white/35 text-[8px] uppercase mb-0.5">{f.l}</p>
+              <p className="text-orange-300 font-bold text-xs font-mono">{f.v}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="bg-orange-500/10 border border-orange-400/20 rounded-2xl px-3 py-2.5 flex items-start gap-2">
+        <span className="text-orange-400 text-sm shrink-0">🛡️</span>
+        <p className="text-orange-300/80 text-[9px] leading-relaxed">If TSLA drops 10% from your buy price, your shares sell automatically — even if you&apos;re offline.</p>
+      </div>
+      <div className="flex items-center gap-2 bg-white/5 rounded-xl px-3 py-2 border border-white/8">
+        <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse shrink-0" />
+        <p className="text-white/40 text-[9px]">Set on any holding from your Portfolio tab</p>
+      </div>
+    </div>
+  );
+}
+
+function IllActivity() {
+  const rows = [
+    { action: 'BUY', sym: 'NVDA', name: 'AlexT', total: '-$1,240', time: '2m ago', buy: true },
+    { action: 'SELL', sym: 'AAPL', name: 'Jamie', total: '+$540', time: '8m ago', buy: false },
+    { action: 'BUY', sym: 'MSFT', name: 'You', total: '-$890', time: '15m ago', buy: true },
+  ];
+  return (
+    <div className="flex flex-col gap-2 w-full max-w-[220px] mx-auto">
+      <p className="text-white/30 text-[8px] uppercase tracking-widest text-center mb-1">Live Activity Feed</p>
+      {rows.map((r, i) => (
+        <div key={i} className={cn('flex items-center gap-2 rounded-xl px-2.5 py-2 border', r.name === 'You' ? 'bg-blue-500/15 border-blue-400/20' : 'bg-white/8 border-white/8')}>
+          <span className={cn('text-[8px] font-bold px-1.5 py-0.5 rounded-lg shrink-0', r.buy ? 'bg-green-500/20 text-green-400 border border-green-400/20' : 'bg-red-500/20 text-red-400 border border-red-400/20')}>
+            {r.action}
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-mono text-[10px] font-bold">{r.sym}</p>
+            <p className={cn('text-[8px]', r.name === 'You' ? 'text-blue-300' : 'text-white/40')}>{r.name}</p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className={cn('font-mono text-[10px] font-bold', r.buy ? 'text-red-400' : 'text-green-400')}>{r.total}</p>
+            <p className="text-white/30 text-[8px]">{r.time}</p>
+          </div>
+        </div>
+      ))}
+      <p className="text-white/25 text-[8px] text-center mt-1">Tap any player on the leaderboard to see all their trades</p>
+    </div>
+  );
+}
+
 function IllReady() {
   return (
     <div className="flex flex-col items-center justify-center gap-4">
@@ -333,7 +396,7 @@ const STEPS: Step[] = [
     emoji: '🏆',
     label: 'Leaderboard',
     title: 'Track Live Rankings',
-    desc: "The room's main page shows a live leaderboard ranked by total portfolio return. The more your stocks gain, the higher you climb. It updates automatically.",
+    desc: "The room's main page shows a live leaderboard ranked by total portfolio return. The more your stocks gain, the higher you climb. Tap any player's row to see every trade they've made — great for spotting what's working.",
     bg: '#251500', glow: '#805010',
     Ill: IllLeaderboard,
   },
@@ -360,6 +423,22 @@ const STEPS: Step[] = [
     desc: 'The Portfolio tab shows all your holdings, their current value, and your total return. Tap Sell on any stock to sell shares. The proceeds go straight back to your cash balance.',
     bg: '#0a1f1f', glow: '#106060',
     Ill: IllPortfolio,
+  },
+  {
+    emoji: '🛡️',
+    label: 'Stop Loss',
+    title: 'Protect Yourself with Stop Loss',
+    desc: "In your Portfolio tab, tap any holding and set a Stop Loss. If the stock drops past your chosen percentage, your shares sell automatically — even when you're not watching. It's your safety net against big losses.",
+    bg: '#1f0f00', glow: '#803010',
+    Ill: IllStopLoss,
+  },
+  {
+    emoji: '📊',
+    label: 'Activity Feed',
+    title: 'See Every Trade in the Room',
+    desc: "The Activity tab shows a live feed of every buy and sell made by every player. Filter to just your own trades or watch the whole room. Tap any player on the leaderboard for a detailed breakdown of their trades.",
+    bg: '#0a1f2e', glow: '#0a5070',
+    Ill: IllActivity,
   },
   {
     emoji: '💬',

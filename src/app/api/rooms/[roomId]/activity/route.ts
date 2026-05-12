@@ -5,7 +5,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(_req: NextRequest, { params }: { params: { roomId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { roomId: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -15,10 +15,13 @@ export async function GET(_req: NextRequest, { params }: { params: { roomId: str
   });
   if (!member) return NextResponse.json({ error: 'Not a member of this room' }, { status: 403 });
 
+  // Optional: filter by a specific player
+  const filterUserId = new URL(req.url).searchParams.get('userId') ?? undefined;
+
   // Fetch all trades for the room with player info
   const [trades, members] = await Promise.all([
     prisma.trade.findMany({
-      where: { roomId: params.roomId },
+      where: { roomId: params.roomId, ...(filterUserId ? { userId: filterUserId } : {}) },
       orderBy: { executedAt: 'desc' },
       take: 200,
       include: { user: { select: { username: true } } },

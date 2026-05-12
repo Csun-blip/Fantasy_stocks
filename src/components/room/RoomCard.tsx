@@ -20,8 +20,9 @@ export default function RoomCard({ room, isCreator }: RoomCardProps) {
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           {isCreator && (
-            <span className="inline-flex items-center text-[10px] bg-primary/15 border border-primary/30 text-primary px-2 py-0.5 rounded-full font-semibold mb-1.5">
-              Created by you
+            <span className="inline-flex items-center gap-1 text-[10px] bg-danger/15 border border-danger/30 text-danger px-2 py-0.5 rounded-full font-semibold mb-1.5">
+              <span className="inline-flex items-center justify-center w-3.5 h-3.5 bg-danger text-white rounded-full text-[8px] font-bold leading-none">A</span>
+              Admin
             </span>
           )}
           <h3 className="font-semibold text-foreground truncate">{room.name}</h3>
