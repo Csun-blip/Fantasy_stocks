@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Button from '@/components/ui/Button';
-import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext';
 import type { StockQuote, StockSearchResult, PendingOrder } from '@/types';
 
 interface TradeFormProps {
@@ -16,6 +16,7 @@ interface TradeFormProps {
 }
 
 export default function TradeForm({ roomId, stock, cashBalance, onSuccess, onPendingOrder, onCancel, ownedShares = 0 }: TradeFormProps) {
+  const { format } = useCurrency();
   const [action, setAction] = useState<'BUY' | 'SELL'>('BUY');
   const [quantityStr, setQuantityStr] = useState('1');
   const [quote, setQuote] = useState<StockQuote | null>(null);
@@ -90,14 +91,14 @@ export default function TradeForm({ roomId, stock, cashBalance, onSuccess, onPen
         <>
           <div className="bg-surface-raised rounded-xl p-3 flex items-center justify-between">
             <div>
-              <p className="font-mono text-2xl font-bold text-foreground">{formatCurrency(quote.price)}</p>
+              <p className="font-mono text-2xl font-bold text-foreground">{format(quote.price)}</p>
               <p className="text-xs text-muted">{quote.exchange} · {quote.marketState}</p>
             </div>
             <div className={`text-right ${quote.changePercent >= 0 ? 'text-success' : 'text-danger'}`}>
               <p className="font-mono text-sm font-medium">
                 {quote.changePercent >= 0 ? '+' : ''}{quote.changePercent.toFixed(2)}%
               </p>
-              <p className="font-mono text-xs">{quote.change >= 0 ? '+' : ''}{formatCurrency(quote.change)}</p>
+              <p className="font-mono text-xs">{quote.change >= 0 ? '+' : ''}{format(quote.change)}</p>
             </div>
           </div>
 
@@ -159,17 +160,17 @@ export default function TradeForm({ roomId, stock, cashBalance, onSuccess, onPen
       <div className="bg-surface-raised rounded-xl p-3 flex flex-col gap-2 text-sm">
         <div className="flex justify-between">
           <span className="text-muted">Price per share</span>
-          <span className="font-mono text-foreground">{formatCurrency(price)}</span>
+          <span className="font-mono text-foreground">{format(price)}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted">Total {action === 'BUY' ? 'cost' : 'proceeds'}</span>
-          <span className="font-mono font-semibold text-foreground">{formatCurrency(total)}</span>
+          <span className="font-mono font-semibold text-foreground">{format(total)}</span>
         </div>
         {action === 'BUY' && (
           <div className="flex justify-between border-t border-border pt-2 mt-1">
             <span className="text-muted">Cash after trade</span>
             <span className={`font-mono font-semibold ${cashBalance - total < 0 ? 'text-danger' : 'text-success'}`}>
-              {formatCurrency(cashBalance - total)}
+              {format(cashBalance - total)}
             </span>
           </div>
         )}

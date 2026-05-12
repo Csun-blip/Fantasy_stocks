@@ -7,10 +7,12 @@ import RoomNav from '@/components/room/RoomNav';
 import PortfolioTable from '@/components/trading/PortfolioTable';
 import TradeForm from '@/components/trading/TradeForm';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { formatCurrency, formatPercent } from '@/lib/utils';
+import { formatPercent } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext';
 import type { PortfolioSummary, Holding, PendingOrder } from '@/types';
 
 export default function PortfolioPage() {
+  const { format } = useCurrency();
   const { roomId } = useParams<{ roomId: string }>();
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
   const [pendingOrders, setPendingOrders] = useState<PendingOrder[]>([]);
@@ -63,11 +65,11 @@ export default function PortfolioPage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <SummaryCard label="Total Value" value={formatCurrency(portfolio.totalValue)} colored={false} />
-        <SummaryCard label="Cash Balance" value={formatCurrency(portfolio.cashBalance)} colored={false} />
+        <SummaryCard label="Total Value" value={format(portfolio.totalValue)} colored={false} />
+        <SummaryCard label="Cash Balance" value={format(portfolio.cashBalance)} colored={false} />
         <SummaryCard
           label="Total Return"
-          value={`${portfolio.totalReturnPercent >= 0 ? '+' : ''}${formatCurrency(portfolio.totalReturn)}`}
+          value={`${portfolio.totalReturnPercent >= 0 ? '+' : ''}${format(portfolio.totalReturn)}`}
           positive={portfolio.totalReturn >= 0}
           colored
         />
@@ -110,8 +112,8 @@ export default function PortfolioPage() {
                       <div>
                         <p className="font-mono text-sm font-semibold text-foreground">{order.symbol}</p>
                         <p className="text-xs text-muted">
-                          {order.quantity} share{order.quantity !== 1 ? 's' : ''} at {formatCurrency(order.reservedPrice)} each
-                          {order.action === 'BUY' && ` · ${formatCurrency(order.reservedAmount)} reserved`}
+                          {order.quantity} share{order.quantity !== 1 ? 's' : ''} at {format(order.reservedPrice)} each
+                          {order.action === 'BUY' && ` · ${format(order.reservedAmount)} reserved`}
                         </p>
                       </div>
                     </div>

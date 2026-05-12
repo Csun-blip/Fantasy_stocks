@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { formatCurrency, formatPercent } from '@/lib/utils';
+import { formatPercent } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import type { LeaderboardEntry } from '@/types';
 
@@ -13,6 +14,7 @@ function Medal({ rank }: { rank: number }) {
 }
 
 export default function Leaderboard({ roomId }: { roomId: string }) {
+  const { format } = useCurrency();
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -70,9 +72,9 @@ export default function Leaderboard({ roomId }: { roomId: string }) {
           </div>
 
           <div className="text-right shrink-0">
-            <p className="font-mono font-semibold text-foreground">{formatCurrency(entry.totalValue)}</p>
+            <p className="font-mono font-semibold text-foreground">{format(entry.totalValue)}</p>
             <p className={`font-mono text-xs mt-0.5 ${entry.returnPercent >= 0 ? 'text-success' : 'text-danger'}`}>
-              {formatPercent(entry.returnPercent)} ({entry.returnPercent >= 0 ? '+' : ''}{formatCurrency(entry.returnAmount)})
+              {formatPercent(entry.returnPercent)} ({entry.returnPercent >= 0 ? '+' : ''}{format(entry.returnAmount)})
             </p>
           </div>
         </div>

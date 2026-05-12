@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
+import { useCurrency, CURRENCIES } from '@/context/CurrencyContext';
+import { cn } from '@/lib/utils';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -26,6 +28,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
+  const { currency, setCurrency, format } = useCurrency();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -90,6 +93,38 @@ export default function SettingsPage() {
         <p className="text-xs text-muted mt-4">
           You can set a different nickname per room when creating or joining a room.
         </p>
+      </Section>
+
+      {/* Currency */}
+      <Section title="Display Currency">
+        <p className="text-sm text-muted-bright mb-4">
+          All portfolio values, prices, and totals will be displayed in your chosen currency.
+          Stock data is sourced in USD — this changes the display symbol only.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+          {CURRENCIES.map((c) => (
+            <button
+              key={c.code}
+              onClick={() => setCurrency(c.code)}
+              className={cn(
+                'flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all',
+                currency === c.code
+                  ? 'bg-primary/10 border-primary text-foreground'
+                  : 'bg-surface-raised border-border text-muted-bright hover:border-primary/40 hover:text-foreground'
+              )}
+            >
+              <span className="text-xl leading-none">{c.flag}</span>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground">{c.code}</p>
+                <p className="text-[10px] text-muted truncate">{c.name}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+        <div className="bg-surface-raised rounded-xl px-4 py-3 flex items-center justify-between">
+          <span className="text-sm text-muted-bright">Preview</span>
+          <span className="font-mono font-bold text-foreground text-lg">{format(12345.67)}</span>
+        </div>
       </Section>
 
       {/* Change password */}

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { formatCurrency, formatPercent } from '@/lib/utils';
+import { formatPercent } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext';
 import type { LeaderboardEntry } from '@/types';
 
 interface TopStock {
@@ -18,6 +19,7 @@ interface RoomHistoryData {
 }
 
 export default function RoomHistory({ roomId }: { roomId: string }) {
+  const { format } = useCurrency();
   const [data, setData] = useState<RoomHistoryData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -57,7 +59,7 @@ export default function RoomHistory({ roomId }: { roomId: string }) {
         <div className="flex flex-wrap gap-4 mt-3">
           <div>
             <p className="text-xs text-muted-bright mb-0.5">Final Portfolio</p>
-            <p className="font-mono text-xl font-bold text-foreground">{formatCurrency(winner.totalValue)}</p>
+            <p className="font-mono text-xl font-bold text-foreground">{format(winner.totalValue)}</p>
           </div>
           <div>
             <p className="text-xs text-muted-bright mb-0.5">Total Return</p>
@@ -68,7 +70,7 @@ export default function RoomHistory({ roomId }: { roomId: string }) {
           <div>
             <p className="text-xs text-muted-bright mb-0.5">Profit / Loss</p>
             <p className={`font-mono text-xl font-bold ${winner.returnAmount >= 0 ? 'text-success' : 'text-danger'}`}>
-              {winner.returnAmount >= 0 ? '+' : ''}{formatCurrency(winner.returnAmount)}
+              {winner.returnAmount >= 0 ? '+' : ''}{format(winner.returnAmount)}
             </p>
           </div>
           <div>
@@ -101,7 +103,7 @@ export default function RoomHistory({ roomId }: { roomId: string }) {
                 <p className="text-xs text-muted-bright">{entry.tradeCount} trades</p>
               </div>
               <div className="text-right shrink-0">
-                <p className="font-mono text-sm font-semibold text-foreground">{formatCurrency(entry.totalValue)}</p>
+                <p className="font-mono text-sm font-semibold text-foreground">{format(entry.totalValue)}</p>
                 <p className={`font-mono text-xs ${entry.returnPercent >= 0 ? 'text-success' : 'text-danger'}`}>
                   {entry.returnPercent >= 0 ? '+' : ''}{formatPercent(entry.returnPercent)}
                 </p>
@@ -127,7 +129,7 @@ export default function RoomHistory({ roomId }: { roomId: string }) {
                 </div>
                 <div className="text-right shrink-0 space-y-0.5">
                   <p className="text-xs text-muted-bright">{stock.totalTrades} trade{stock.totalTrades !== 1 ? 's' : ''}</p>
-                  <p className="font-mono text-xs text-foreground">{formatCurrency(stock.totalVolume)} volume</p>
+                  <p className="font-mono text-xs text-foreground">{format(stock.totalVolume)} volume</p>
                 </div>
               </div>
             ))}

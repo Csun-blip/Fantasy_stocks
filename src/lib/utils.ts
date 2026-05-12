@@ -6,12 +6,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number, currency = 'EUR'): string {
-  return new Intl.NumberFormat('de-DE', {
+export function formatCurrency(amount: number, currency = 'USD'): string {
+  const noDecimal = currency === 'JPY' || currency === 'KRW';
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: noDecimal ? 0 : 2,
+    maximumFractionDigits: noDecimal ? 0 : 2,
   }).format(amount);
 }
 
@@ -21,7 +22,7 @@ export function formatPercent(value: number): string {
 }
 
 export function formatNumber(value: number, decimals = 2): string {
-  return new Intl.NumberFormat('de-DE', {
+  return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }).format(value);

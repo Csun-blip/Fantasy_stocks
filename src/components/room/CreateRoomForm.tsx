@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext';
 
 const DURATIONS = [
   { value: '1w', label: '1 Week' },
@@ -23,6 +23,7 @@ const START_OPTIONS = [
 ];
 
 export default function CreateRoomForm() {
+  const { format } = useCurrency();
   const router = useRouter();
   const [form, setForm] = useState({
     name: '',
@@ -107,7 +108,7 @@ export default function CreateRoomForm() {
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium text-muted-bright">Starting Capital</label>
-          <span className="font-mono text-primary font-semibold">{formatCurrency(form.startingCash)}</span>
+          <span className="font-mono text-primary font-semibold">{format(form.startingCash)}</span>
         </div>
         <input
           type="range"
@@ -119,8 +120,8 @@ export default function CreateRoomForm() {
           className="w-full accent-primary"
         />
         <div className="flex justify-between text-xs text-muted">
-          <span>€1,000</span>
-          <span>€100,000</span>
+          <span>{format(1000)}</span>
+          <span>{format(100000)}</span>
         </div>
       </div>
 

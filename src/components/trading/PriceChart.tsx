@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext';
 import type { PriceHistoryPoint } from '@/types';
 
 const RANGES = [
@@ -19,6 +19,7 @@ interface PriceChartProps {
 }
 
 export default function PriceChart({ symbol }: PriceChartProps) {
+  const { format, currencyConfig } = useCurrency();
   const [range, setRange] = useState<'1w' | '1m' | '3m' | '6m' | '1y' | '5y'>('1m');
   const [data, setData] = useState<PriceHistoryPoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +82,7 @@ export default function PriceChart({ symbol }: PriceChartProps) {
               />
               <YAxis
                 domain={['auto', 'auto']}
-                tickFormatter={(v) => `€${v.toFixed(0)}`}
+                tickFormatter={(v) => `${currencyConfig.symbol}${v.toFixed(0)}`}
                 tick={{ fill: '#64748b', fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
@@ -89,7 +90,7 @@ export default function PriceChart({ symbol }: PriceChartProps) {
               />
               <Tooltip
                 contentStyle={{ background: '#0f1923', border: '1px solid #1e2d45', borderRadius: '12px', color: '#fff' }}
-                formatter={(v: number) => [formatCurrency(v), 'Price']}
+                formatter={(v: number) => [format(v), 'Price']}
                 labelFormatter={(l) => new Date(l).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}
               />
               {firstPrice > 0 && <ReferenceLine y={firstPrice} stroke="#1e2d45" strokeDasharray="4 4" />}

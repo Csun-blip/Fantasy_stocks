@@ -9,10 +9,11 @@ import TradeForm from '@/components/trading/TradeForm';
 import PortfolioTable from '@/components/trading/PortfolioTable';
 import PriceChart from '@/components/trading/PriceChart';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext';
 import type { StockSearchResult, PortfolioSummary, Holding, PendingOrder } from '@/types';
 
 export default function TradePage() {
+  const { format } = useCurrency();
   const { roomId } = useParams<{ roomId: string }>();
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
   const [pendingOrders, setPendingOrders] = useState<PendingOrder[]>([]);
@@ -70,9 +71,9 @@ export default function TradePage() {
         <div className="flex justify-end mb-6">
           <div className="text-right">
             <p className="text-xs text-muted">Available Cash</p>
-            <p className="font-mono text-xl font-bold text-foreground">{formatCurrency(portfolio.cashBalance)}</p>
+            <p className="font-mono text-xl font-bold text-foreground">{format(portfolio.cashBalance)}</p>
             <p className={`text-xs font-mono mt-0.5 ${portfolio.totalReturnPercent >= 0 ? 'text-success' : 'text-danger'}`}>
-              Portfolio: {formatCurrency(portfolio.totalValue)} ({portfolio.totalReturnPercent >= 0 ? '+' : ''}{portfolio.totalReturnPercent.toFixed(2)}%)
+              Portfolio: {format(portfolio.totalValue)} ({portfolio.totalReturnPercent >= 0 ? '+' : ''}{portfolio.totalReturnPercent.toFixed(2)}%)
             </p>
           </div>
         </div>
@@ -123,8 +124,8 @@ export default function TradePage() {
                       <div>
                         <p className="font-mono text-sm font-semibold text-foreground">{order.symbol}</p>
                         <p className="text-xs text-muted">
-                          {order.quantity} share{order.quantity !== 1 ? 's' : ''} at {formatCurrency(order.reservedPrice)}
-                          {order.action === 'BUY' && ` · ${formatCurrency(order.reservedAmount)} reserved`}
+                          {order.quantity} share{order.quantity !== 1 ? 's' : ''} at {format(order.reservedPrice)}
+                          {order.action === 'BUY' && ` · ${format(order.reservedAmount)} reserved`}
                         </p>
                       </div>
                     </div>
@@ -147,11 +148,11 @@ export default function TradePage() {
                 <div className="flex gap-4 text-sm">
                   <div className="text-right">
                     <p className="text-xs text-muted">Cash</p>
-                    <p className="font-mono text-foreground">{formatCurrency(portfolio.cashBalance)}</p>
+                    <p className="font-mono text-foreground">{format(portfolio.cashBalance)}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-muted">Total Value</p>
-                    <p className="font-mono font-semibold text-foreground">{formatCurrency(portfolio.totalValue)}</p>
+                    <p className="font-mono font-semibold text-foreground">{format(portfolio.totalValue)}</p>
                   </div>
                 </div>
               )}

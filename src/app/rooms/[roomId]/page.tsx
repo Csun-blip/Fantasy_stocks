@@ -14,9 +14,12 @@ import RoomHistory from '@/components/room/RoomHistory';
 import Leaderboard from '@/components/leaderboard/Leaderboard';
 import JoinRoomInline from '@/components/room/JoinRoomInline';
 import { formatCurrency, durationLabel } from '@/lib/utils';
+import { cookies } from 'next/headers';
 
 export default async function RoomPage({ params }: { params: { roomId: string } }) {
   const session = await getServerSession(authOptions);
+  const currency = cookies().get('fs_currency')?.value ?? 'USD';
+  const fmt = (n: number) => formatCurrency(n, currency);
 
   const room = await prisma.room.findUnique({
     where: { id: params.roomId },
@@ -85,7 +88,7 @@ export default async function RoomPage({ params }: { params: { roomId: string } 
 
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Starting Capital" value={formatCurrency(room.startingCash)} />
+        <StatCard label="Starting Capital" value={fmt(room.startingCash)} />
         <StatCard label="Duration" value={durationLabel(room.duration)} />
         <StatCard label="Players" value={String(room._count.members)} />
         <div className="bg-surface border border-border rounded-2xl p-4 shadow-card">
@@ -133,7 +136,7 @@ export default async function RoomPage({ params }: { params: { roomId: string } 
                     <>
                       {hasStarted && (
                         <div className="bg-warning/10 border border-warning/30 rounded-xl p-3 text-sm text-warning mb-3">
-                          Competition is in progress. You will join with {formatCurrency(room.startingCash)} and can start trading immediately.
+                          Competition is in progress. You will join with {fmt(room.startingCash)} and can start trading immediately.
                         </div>
                       )}
                       <JoinRoomInline roomId={room.id} startingCash={room.startingCash} />
@@ -141,7 +144,7 @@ export default async function RoomPage({ params }: { params: { roomId: string } 
                   ) : (
                     <>
                       <p className="text-sm text-muted-bright mb-4">
-                        Start with {formatCurrency(room.startingCash)} virtual money
+                        Start with {fmt(room.startingCash)} virtual money
                       </p>
                       <Link href="/login" className="block text-center btn-primary">
                         Log In to Join

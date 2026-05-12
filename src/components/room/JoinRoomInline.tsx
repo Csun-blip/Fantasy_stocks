@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface JoinRoomInlineProps {
   roomId: string;
@@ -10,6 +10,7 @@ interface JoinRoomInlineProps {
 }
 
 export default function JoinRoomInline({ roomId, startingCash }: JoinRoomInlineProps) {
+  const { format } = useCurrency();
   const router = useRouter();
   const [step, setStep] = useState<'prompt' | 'nickname'>('prompt');
   const [nickname, setNickname] = useState('');
@@ -37,7 +38,7 @@ export default function JoinRoomInline({ roomId, startingCash }: JoinRoomInlineP
     return (
       <div className="flex flex-col gap-3">
         <p className="text-sm text-muted-bright">
-          Start with {formatCurrency(startingCash)} virtual money
+          Start with {format(startingCash)} virtual money
         </p>
         <button
           className="w-full btn-primary"

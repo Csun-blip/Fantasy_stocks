@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import Badge from '@/components/ui/Badge';
-import { formatCurrency, durationLabel, timeRemaining } from '@/lib/utils';
+import { durationLabel, timeRemaining } from '@/lib/utils';
+import { useCurrency } from '@/context/CurrencyContext';
 import type { RoomWithMeta } from '@/types';
 
 export default function RoomCard({ room }: { room: RoomWithMeta }) {
+  const { format } = useCurrency();
   const active = room.isActive;
 
   return (
@@ -22,7 +24,7 @@ export default function RoomCard({ room }: { room: RoomWithMeta }) {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <Stat label="Starting Capital" value={formatCurrency(room.startingCash)} />
+        <Stat label="Starting Capital" value={format(room.startingCash)} />
         <Stat label="Duration" value={durationLabel(room.duration)} />
         <Stat label="Players" value={`${room.memberCount}`} />
         <Stat label={active ? 'Ends' : 'Ended'} value={timeRemaining(room.endsAt)} />

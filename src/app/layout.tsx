@@ -3,6 +3,7 @@ import './globals.css';
 import SessionProvider from '@/components/SessionProvider';
 import Navbar from '@/components/Navbar';
 import TourGuide from '@/components/tour/TourGuide';
+import { CurrencyProvider } from '@/context/CurrencyContext';
 
 export const metadata: Metadata = {
   title: 'Fantasy Stocks | Trade Stocks and ETFs Virtually',
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="antialiased min-h-screen">
         <SessionProvider>
+          <CurrencyProvider>
           {/* Decorative background orbs */}
           <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden>
             <div className="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-gold/5 blur-[100px] glow-pulse" />
@@ -28,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Navbar />
           <TourGuide />
           <main className="pt-16 relative z-10">{children}</main>
+          </CurrencyProvider>
         </SessionProvider>
       </body>
     </html>
