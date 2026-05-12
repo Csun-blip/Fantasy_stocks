@@ -7,24 +7,17 @@ import { useCurrency } from '@/context/CurrencyContext';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import type { LeaderboardEntry } from '@/types';
 
-interface TradeRow {
-  id: string;
+interface HoldingRow {
   symbol: string;
   companyName: string;
-  action: string;
   quantity: number;
-  pricePerShare: number;
-  totalValue: number;
-  executedAt: string;
+  avgCost: number;
+  currentPrice: number;
+  marketValue: number;
+  gainLoss: number;
+  gainLossPercent: number;
 }
 
-function timeAgo(iso: string): string {
-  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric' });
-}
 
 function Medal({ rank }: { rank: number }) {
   if (rank === 1) return <span className="text-2xl">🥇</span>;
@@ -45,23 +38,14 @@ function PlayerModal({
   onClose: () => void;
 }) {
   const { format } = useCurrency();
-  const [trades, setTrades] = useState<TradeRow[]>([]);
+  const [holdings, setHoldings] = useState<HoldingRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/rooms/${roomId}/activity?userId=${entry.userId}`, { cache: 'no-store' })
+    fetch(`/api/rooms/${roomId}/holdings?userId=${entry.userId}`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
-        setTrades((d.activity ?? []).map((t: { id: string; symbol: string; companyName: string; action: string; quantity: number; pricePerShare: number; totalValue: number; executedAt: string }) => ({
-          id: t.id,
-          symbol: t.symbol,
-          companyName: t.companyName,
-          action: t.action,
-          quantity: t.quantity,
-          pricePerShare: t.pricePerShare,
-          totalValue: t.totalValue,
-          executedAt: t.executedAt,
-        })));
+        setHoldings(d.holdings ?? []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -91,7 +75,7 @@ function PlayerModal({
                 <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full border border-primary/30">you</span>
               )}
             </div>
-            <p className="text-xs text-muted">{entry.tradeCount} trade{entry.tradeCount !== 1 ? 's' : ''}</p>
+            <p className="text-xs text-muted">{entry.tradeCount} trade{entry.tradeCount !== 1 ? 's' : ''} · open positions</p>
           </div>
           <button
             onClick={onClose}
@@ -123,39 +107,40 @@ function PlayerModal({
           </div>
         </div>
 
-        {/* Trade list */}
+        {/* Holdings list */}
         <div className="overflow-y-auto flex-1">
           {loading ? (
             <LoadingSpinner className="py-10" />
-          ) : trades.length === 0 ? (
+          ) : holdings.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted text-sm">No trades yet</p>
+              <p className="text-muted text-sm">No open positions</p>
             </div>
           ) : (
             <div className="divide-y divide-border/50">
-              {trades.map((t) => (
-                <div key={t.id} className="flex items-center justify-between px-5 py-3 hover:bg-surface-raised/50 transition-colors">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-lg shrink-0 ${
-                      t.action === 'BUY' ? 'bg-success/15 text-success' : 'bg-danger/15 text-danger'
-                    }`}>
-                      {t.action}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="font-mono font-semibold text-foreground text-sm">{t.symbol}</p>
-                      <p className="text-muted text-[10px] truncate max-w-[160px]">{t.companyName}</p>
+              {holdings.map((h) => {
+                const color = h.gainLoss > 0 ? 'text-success' : h.gainLoss < 0 ? 'text-danger' : 'text-muted';
+                const sign = h.gainLoss > 0 ? '+' : '';
+                return (
+                  <div key={h.symbol} className="flex items-center justify-between px-5 py-3 hover:bg-surface-raised/50 transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-surface-raised flex items-center justify-center shrink-0">
+                        <span className="font-mono font-black text-[10px] text-foreground">{h.symbol.slice(0, 2)}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-mono font-semibold text-foreground text-sm">{h.symbol}</p>
+                        <p className="text-muted text-[10px] truncate max-w-[140px]">{h.companyName}</p>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0 ml-3">
+                      <p className="font-mono font-semibold text-foreground text-sm">{format(h.marketValue)}</p>
+                      <p className={`font-mono text-[10px] ${color}`}>
+                        {sign}{format(h.gainLoss)} ({sign}{h.gainLossPercent.toFixed(2)}%)
+                      </p>
+                      <p className="text-muted text-[10px]">{h.quantity} shares @ {format(h.avgCost)}</p>
                     </div>
                   </div>
-                  <div className="text-right shrink-0 ml-3">
-                    <p className={`font-mono font-semibold text-sm ${t.action === 'BUY' ? 'text-danger' : 'text-success'}`}>
-                      {t.action === 'BUY' ? '-' : '+'}{format(t.totalValue)}
-                    </p>
-                    <p className="text-muted text-[10px]">
-                      {t.quantity} × {format(t.pricePerShare)} · {timeAgo(t.executedAt)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

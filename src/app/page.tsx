@@ -29,7 +29,7 @@ const FEATURES = [
   {
     icon: '🎯',
     title: 'Risk-Free Learning',
-    desc: 'Practice investing with up to €100,000 virtual money. No real money at stake.',
+    desc: 'Practice investing with up to $100,000 virtual money. No real money at stake.',
   },
 ];
 
@@ -98,7 +98,7 @@ export default function LandingPage() {
       <section className="py-12 px-4 border-y border-border bg-surface/50">
         <div className="max-w-4xl mx-auto grid grid-cols-3 gap-8 text-center">
           {[
-            { label: 'Starting Capital', value: '€1K – €100K' },
+            { label: 'Starting Capital', value: '$1K – $100K' },
             { label: 'Max Duration', value: '5 Years' },
             { label: 'Data Source', value: 'Yahoo Finance' },
           ].map((s) => (
