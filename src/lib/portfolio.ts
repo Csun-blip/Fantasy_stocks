@@ -45,7 +45,8 @@ export function computeHoldingsFromTrades(trades: Trade[]): RawHolding[] {
 export async function buildPortfolioSummary(
   trades: Trade[],
   cashBalance: number,
-  startingCash: number
+  startingCash: number,
+  reservedCash = 0
 ): Promise<PortfolioSummary> {
   const rawHoldings = computeHoldingsFromTrades(trades);
   const symbols = rawHoldings.map((h) => h.symbol);
@@ -72,7 +73,7 @@ export async function buildPortfolioSummary(
   });
 
   const holdingsValue = holdings.reduce((sum, h) => sum + h.marketValue, 0);
-  const totalValue = holdingsValue + cashBalance;
+  const totalValue = holdingsValue + cashBalance + reservedCash;
   const totalReturn = totalValue - startingCash;
   const totalReturnPercent = startingCash > 0 ? (totalReturn / startingCash) * 100 : 0;
 

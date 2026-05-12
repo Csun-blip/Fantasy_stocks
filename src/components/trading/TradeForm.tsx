@@ -25,13 +25,6 @@ export default function TradeForm({ roomId, stock, cashBalance, onSuccess, onPen
   const [success, setSuccess] = useState('');
 
   const quantity = Math.max(1, parseInt(quantityStr) || 1);
-  const isMarketOpen = quote?.marketState === 'REGULAR';
-
-  function marketStateLabel(state: string): string {
-    if (state === 'PRE') return 'in pre-market hours';
-    if (state === 'POST') return 'in after-hours trading';
-    return 'closed';
-  }
 
   useEffect(() => {
     async function fetchQuote() {
@@ -58,7 +51,7 @@ export default function TradeForm({ roomId, stock, cashBalance, onSuccess, onPen
   }
 
   async function handleTrade() {
-    if (!canSubmit || !isMarketOpen) return;
+    if (!canSubmit) return;
     setError('');
     setSuccess('');
     setTrading(true);
@@ -77,34 +70,6 @@ export default function TradeForm({ roomId, stock, cashBalance, onSuccess, onPen
     } else {
       setSuccess(`${action === 'BUY' ? 'Bought' : 'Sold'} ${quantity} share${quantity > 1 ? 's' : ''} of ${stock.symbol}`);
       onSuccess(data.newCashBalance);
-      setQuantityStr('1');
-    }
-  }
-
-  async function handlePendingOrder() {
-    if (!canSubmit) return;
-    setError('');
-    setSuccess('');
-    setTrading(true);
-
-    const res = await fetch(`/api/rooms/${roomId}/pending-orders`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ symbol: stock.symbol, companyName: stock.name, action, quantity }),
-    });
-
-    const data = await res.json();
-    setTrading(false);
-
-    if (!res.ok) {
-      setError(data.error || 'Failed to queue order');
-    } else {
-      setSuccess(`Order queued. Will execute when the market opens for ${stock.symbol}.`);
-      if (onPendingOrder) {
-        onPendingOrder(data.order, data.newCashBalance);
-      } else {
-        onSuccess(data.newCashBalance ?? cashBalance);
-      }
       setQuantityStr('1');
     }
   }
@@ -136,11 +101,6 @@ export default function TradeForm({ roomId, stock, cashBalance, onSuccess, onPen
             </div>
           </div>
 
-          {!isMarketOpen && (
-            <div className="bg-warning/10 border border-warning/30 rounded-xl px-4 py-3 text-sm text-warning">
-              Market is currently <strong>{marketStateLabel(quote.marketState ?? 'closed')}</strong>. Orders will be queued and executed automatically when the market opens.
-            </div>
-          )}
         </>
       ) : (
         <div className="bg-danger/10 border border-danger/30 rounded-xl px-4 py-3 text-sm text-danger">
@@ -222,27 +182,15 @@ export default function TradeForm({ roomId, stock, cashBalance, onSuccess, onPen
         <div className="bg-success/10 border border-success/30 rounded-xl px-4 py-3 text-sm text-success">{success}</div>
       )}
 
-      {isMarketOpen ? (
-        <Button
-          onClick={handleTrade}
-          loading={trading}
-          disabled={!quote || !canSubmit}
-          variant={action === 'BUY' ? 'success' : 'danger'}
-          size="lg"
-        >
-          {action === 'BUY' ? `Buy ${quantity} Share${quantity > 1 ? 's' : ''}` : `Sell ${quantity} Share${quantity > 1 ? 's' : ''}`}
-        </Button>
-      ) : (
-        <Button
-          onClick={handlePendingOrder}
-          loading={trading}
-          disabled={!quote || !canSubmit}
-          variant={action === 'BUY' ? 'success' : 'danger'}
-          size="lg"
-        >
-          {action === 'BUY' ? `Queue Buy ${quantity} Share${quantity > 1 ? 's' : ''}` : `Queue Sell ${quantity} Share${quantity > 1 ? 's' : ''}`}
-        </Button>
-      )}
+      <Button
+        onClick={handleTrade}
+        loading={trading}
+        disabled={!quote || !canSubmit}
+        variant={action === 'BUY' ? 'success' : 'danger'}
+        size="lg"
+      >
+        {action === 'BUY' ? `Buy ${quantity} Share${quantity > 1 ? 's' : ''}` : `Sell ${quantity} Share${quantity > 1 ? 's' : ''}`}
+      </Button>
     </div>
   );
 }

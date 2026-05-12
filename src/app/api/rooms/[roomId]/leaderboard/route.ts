@@ -23,10 +23,16 @@ export async function GET(_req: NextRequest, { params }: { params: { roomId: str
 
   if (!room) return NextResponse.json({ error: 'Room not found' }, { status: 404 });
 
-  const allTrades = await prisma.trade.findMany({
-    where: { roomId: params.roomId },
-    orderBy: { executedAt: 'asc' },
-  });
+  const [allTrades, allPendingOrders] = await Promise.all([
+    prisma.trade.findMany({
+      where: { roomId: params.roomId },
+      orderBy: { executedAt: 'asc' },
+    }),
+    prisma.pendingOrder.findMany({
+      where: { roomId: params.roomId, action: 'BUY' },
+      select: { userId: true, reservedAmount: true },
+    }),
+  ]);
 
   const symbols = Array.from(new Set(allTrades.map((t) => t.symbol)));
   const prices = symbols.length > 0 ? await getBatchQuotes(symbols) : new Map();
@@ -40,7 +46,11 @@ export async function GET(_req: NextRequest, { params }: { params: { roomId: str
       return sum + price * h.quantity;
     }, 0);
 
-    const totalValue = holdingsValue + member.cashBalance;
+    const reservedCash = allPendingOrders
+      .filter((o) => o.userId === member.userId)
+      .reduce((sum, o) => sum + o.reservedAmount, 0);
+
+    const totalValue = holdingsValue + member.cashBalance + reservedCash;
     const returnAmount = totalValue - room.startingCash;
     const returnPercent = (returnAmount / room.startingCash) * 100;
     const displayName = member.nickname?.trim() || member.user.username;

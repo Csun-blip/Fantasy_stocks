@@ -17,12 +17,19 @@ export async function GET(_req: NextRequest, { params }: { params: { roomId: str
 
   if (!member) return NextResponse.json({ error: 'Not a member of this room' }, { status: 403 });
 
-  const trades = await prisma.trade.findMany({
-    where: { roomId: params.roomId, userId: session.user.id },
-    orderBy: { executedAt: 'asc' },
-  });
+  const [trades, pendingOrders] = await Promise.all([
+    prisma.trade.findMany({
+      where: { roomId: params.roomId, userId: session.user.id },
+      orderBy: { executedAt: 'asc' },
+    }),
+    prisma.pendingOrder.findMany({
+      where: { roomId: params.roomId, userId: session.user.id, action: 'BUY' },
+      select: { reservedAmount: true },
+    }),
+  ]);
 
-  const summary = await buildPortfolioSummary(trades, member.cashBalance, member.room.startingCash);
+  const reservedCash = pendingOrders.reduce((sum, o) => sum + o.reservedAmount, 0);
+  const summary = await buildPortfolioSummary(trades, member.cashBalance, member.room.startingCash, reservedCash);
 
   return NextResponse.json(summary);
 }
