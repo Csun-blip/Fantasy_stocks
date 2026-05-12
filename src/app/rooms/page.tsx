@@ -5,7 +5,6 @@ import Link from 'next/link';
 import RoomCard from '@/components/room/RoomCard';
 import JoinRoomModal from '@/components/room/JoinRoomModal';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import Badge from '@/components/ui/Badge';
 import type { RoomWithMeta } from '@/types';
 
 interface MyRoom extends RoomWithMeta {
@@ -75,21 +74,7 @@ export default function RoomsPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
                 {myRooms.map((room) => (
-                  <div key={room.id} className="relative">
-                    {room.isCreator && (
-                      <div className="absolute -top-2 left-3 z-10">
-                        <span className="text-[10px] bg-primary/20 border border-primary/30 text-primary px-2 py-0.5 rounded-full font-semibold">
-                          Created by you
-                        </span>
-                      </div>
-                    )}
-                    {!room.isPublic && (
-                      <div className="absolute -top-2 right-3 z-10">
-                        <Badge variant="yellow">Private</Badge>
-                      </div>
-                    )}
-                    <RoomCard room={room} />
-                  </div>
+                  <RoomCard key={room.id} room={room} isCreator={room.isCreator} />
                 ))}
               </div>
             </section>

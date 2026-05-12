@@ -6,7 +6,12 @@ import { durationLabel, timeRemaining } from '@/lib/utils';
 import { useCurrency } from '@/context/CurrencyContext';
 import type { RoomWithMeta } from '@/types';
 
-export default function RoomCard({ room }: { room: RoomWithMeta }) {
+interface RoomCardProps {
+  room: RoomWithMeta;
+  isCreator?: boolean;
+}
+
+export default function RoomCard({ room, isCreator }: RoomCardProps) {
   const { format } = useCurrency();
   const active = room.isActive;
 
@@ -14,6 +19,11 @@ export default function RoomCard({ room }: { room: RoomWithMeta }) {
     <div className="bg-surface border border-border rounded-2xl p-5 hover:border-primary/40 transition-all duration-200 flex flex-col gap-4 h-full">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
+          {isCreator && (
+            <span className="inline-flex items-center text-[10px] bg-primary/15 border border-primary/30 text-primary px-2 py-0.5 rounded-full font-semibold mb-1.5">
+              Created by you
+            </span>
+          )}
           <h3 className="font-semibold text-foreground truncate">{room.name}</h3>
           {/* Always reserve 2-line height so cards align regardless of description */}
           <p className="text-sm text-muted mt-0.5 line-clamp-2 min-h-[2.5rem]">
@@ -33,7 +43,7 @@ export default function RoomCard({ room }: { room: RoomWithMeta }) {
         <Stat label={active ? 'Ends' : 'Ended'} value={timeRemaining(room.endsAt)} />
       </div>
 
-      <div className="flex gap-2 pt-1">
+      <div className="flex gap-2 pt-1 mt-auto">
         <Link
           href={`/rooms/${room.id}`}
           className="flex-1 text-center text-sm bg-surface-raised hover:bg-border border border-border text-foreground py-2 rounded-xl transition-colors"

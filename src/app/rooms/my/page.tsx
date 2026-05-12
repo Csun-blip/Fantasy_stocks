@@ -149,7 +149,7 @@ function MyRoomsContent() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
           {visibleRooms.map((room) => (
-            <RoomCardWithBadges key={room.id} room={room} />
+            <RoomCard key={room.id} room={room} isCreator={room.isCreator} />
           ))}
         </div>
       )}
@@ -157,25 +157,3 @@ function MyRoomsContent() {
   );
 }
 
-function RoomCardWithBadges({ room }: { room: MyRoom }) {
-  return (
-    <div className="relative pt-2">
-      {/* Creator / Private badges above card */}
-      {(room.isCreator || !room.isPublic) && (
-        <div className="absolute -top-0 left-3 z-10 flex items-center gap-1.5">
-          {room.isCreator && (
-            <span className="text-[10px] bg-primary/20 border border-primary/30 text-primary px-2 py-0.5 rounded-full font-semibold">
-              Created by you
-            </span>
-          )}
-          {!room.isPublic && !room.isCreator && (
-            <span className="text-[10px] bg-warning/20 border border-warning/30 text-warning px-2 py-0.5 rounded-full font-semibold">
-              Private
-            </span>
-          )}
-        </div>
-      )}
-      <RoomCard room={room} />
-    </div>
-  );
-}
