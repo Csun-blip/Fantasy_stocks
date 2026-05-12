@@ -11,7 +11,7 @@ const HEADERS = {
 
 type MoversData = { gainers: StockQuote[]; losers: StockQuote[]; updatedAt: string };
 let moversCache: { data: MoversData; ts: number } | null = null;
-const CACHE_TTL = 60_000;
+const CACHE_TTL = 50_000; // 50s — shorter than the 60s client poll so every poll gets fresh data
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapQuote(q: any): StockQuote {
@@ -53,13 +53,13 @@ export async function GET() {
   if (moversCache && Date.now() - moversCache.ts < CACHE_TTL) {
     return NextResponse.json(moversCache.data);
   }
+  const headers = { 'Cache-Control': 'no-store, max-age=0' };
   try {
     const data = await buildMovers();
     moversCache = { data, ts: Date.now() };
-    return NextResponse.json(data);
+    return NextResponse.json(data, { headers });
   } catch {
-    // Return stale cache on error rather than failing
-    if (moversCache) return NextResponse.json(moversCache.data);
-    return NextResponse.json({ gainers: [], losers: [], updatedAt: new Date().toISOString() });
+    if (moversCache) return NextResponse.json(moversCache.data, { headers });
+    return NextResponse.json({ gainers: [], losers: [], updatedAt: new Date().toISOString() }, { headers });
   }
 }
