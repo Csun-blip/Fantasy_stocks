@@ -13,18 +13,16 @@ export async function GET() {
   const memberships = await prisma.roomMember.findMany({
     where: { userId: session.user.id },
     include: { room: { include: { _count: { select: { members: true } } } } },
-    orderBy: { joinedAt: 'desc' },
+    orderBy: { room: { createdAt: 'desc' } },
   });
 
-  const rooms = memberships
-    .map((m) => ({
-      ...m.room,
-      memberCount: m.room._count.members,
-      isMember: true,
-      isActive: new Date(m.room.endsAt) > now,
-      isCreator: m.room.createdById === session.user.id,
-    }))
-    .filter((r) => r.isActive);
+  const rooms = memberships.map((m) => ({
+    ...m.room,
+    memberCount: m.room._count.members,
+    isMember: true,
+    isActive: new Date(m.room.endsAt) > now,
+    isCreator: m.room.createdById === session.user.id,
+  }));
 
   return NextResponse.json({ rooms });
 }

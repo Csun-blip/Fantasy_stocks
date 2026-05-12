@@ -10,30 +10,34 @@ import MarketMovers from '@/components/trading/MarketMovers';
 
 export const metadata = { title: 'Dashboard | Fantasy Stocks' };
 
-const ACTIVE_ROOM_PREVIEW = 3;
+const ACTIVE_PREVIEW = 3;
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect('/login');
 
+  const now = new Date();
+
+  // Fetch all memberships sorted by room creation (newest first) — no take limit
   const memberships = await prisma.roomMember.findMany({
     where: { userId: session.user.id },
     include: { room: { include: { _count: { select: { members: true } } } } },
-    orderBy: { joinedAt: 'desc' },
-    take: 20,
+    orderBy: { room: { createdAt: 'desc' } },
   });
 
   const rooms = memberships.map((m) => ({
     ...m.room,
     memberCount: m.room._count.members,
     isMember: true,
-    isActive: new Date(m.room.endsAt) > new Date(),
+    isActive: new Date(m.room.endsAt) > now,
   }));
 
   const activeRooms = rooms.filter((r) => r.isActive);
   const endedRooms = rooms.filter((r) => !r.isActive);
-  const previewRooms = activeRooms.slice(0, ACTIVE_ROOM_PREVIEW);
-  const hasMore = activeRooms.length > ACTIVE_ROOM_PREVIEW;
+
+  // Show newest 3 active rooms; count is exact total
+  const activePreview = activeRooms.slice(0, ACTIVE_PREVIEW);
+  const activeOverflow = activeRooms.length - ACTIVE_PREVIEW;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -88,27 +92,27 @@ export default async function DashboardPage() {
                   <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
                   Active Rooms ({activeRooms.length})
                 </h2>
-                {hasMore && (
-                  <Link
-                    href="/rooms/my"
-                    className="text-sm text-primary hover:underline flex items-center gap-1"
-                  >
-                    See all {activeRooms.length} rooms →
-                  </Link>
-                )}
+                <Link
+                  href="/rooms/my?filter=active"
+                  className="text-sm text-primary hover:underline flex items-center gap-1"
+                >
+                  See all →
+                </Link>
               </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {previewRooms.map((room) => (
+                {activePreview.map((room) => (
                   <RoomCard key={room.id} room={room as any} />
                 ))}
               </div>
-              {hasMore && (
+
+              {activeOverflow > 0 && (
                 <div className="mt-3 text-center">
                   <Link
-                    href="/rooms/my"
-                    className="text-sm text-muted hover:text-foreground border border-border hover:border-primary/40 px-4 py-2 rounded-xl transition-colors inline-block"
+                    href="/rooms/my?filter=active"
+                    className="text-sm text-muted hover:text-foreground border border-border hover:border-primary/40 px-5 py-2 rounded-xl transition-colors inline-block"
                   >
-                    + {activeRooms.length - ACTIVE_ROOM_PREVIEW} more active room{activeRooms.length - ACTIVE_ROOM_PREVIEW !== 1 ? 's' : ''}
+                    + {activeOverflow} more active room{activeOverflow !== 1 ? 's' : ''}
                   </Link>
                 </div>
               )}
@@ -119,12 +123,32 @@ export default async function DashboardPage() {
 
           {endedRooms.length > 0 && (
             <section>
-              <h2 className="text-lg font-semibold text-muted mb-4">Ended Rooms ({endedRooms.length})</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-muted flex items-center gap-2">
+                  Ended Rooms ({endedRooms.length})
+                </h2>
+                <Link
+                  href="/rooms/my?filter=expired"
+                  className="text-sm text-muted hover:text-foreground hover:underline"
+                >
+                  See all →
+                </Link>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {endedRooms.map((room) => (
+                {endedRooms.slice(0, 3).map((room) => (
                   <RoomCard key={room.id} room={room as any} />
                 ))}
               </div>
+              {endedRooms.length > 3 && (
+                <div className="mt-3 text-center">
+                  <Link
+                    href="/rooms/my?filter=expired"
+                    className="text-sm text-muted hover:text-foreground border border-border hover:border-primary/40 px-5 py-2 rounded-xl transition-colors inline-block"
+                  >
+                    + {endedRooms.length - 3} more ended room{endedRooms.length - 3 !== 1 ? 's' : ''}
+                  </Link>
+                </div>
+              )}
             </section>
           )}
         </div>

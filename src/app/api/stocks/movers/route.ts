@@ -1,33 +1,51 @@
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
-import { getBatchQuotes } from '@/lib/yahoo-finance';
 import type { StockQuote } from '@/types';
 
-const WATCHLIST = [
-  // US large-cap
-  'AAPL', 'MSFT', 'NVDA', 'GOOGL', 'AMZN', 'META', 'TSLA', 'JPM', 'V', 'WMT',
-  'XOM', 'UNH', 'PG', 'JNJ', 'MA', 'HD', 'AVGO', 'LLY', 'ORCL', 'AMD',
-  // German blue-chips
-  'SAP.DE', 'SIE.DE', 'ALV.DE', 'MUV2.DE', 'BAS.DE', 'BAYN.DE', 'DTE.DE',
-  'VOW3.DE', 'BMW.DE', 'ADS.DE', 'MBG.DE', 'DB1.DE', 'RWE.DE', 'BEI.DE',
-  // ETFs
-  'SPY', 'QQQ',
-];
+const YF_BASE = 'https://query1.finance.yahoo.com';
+const HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+  Accept: 'application/json',
+};
 
 type MoversData = { gainers: StockQuote[]; losers: StockQuote[]; updatedAt: string };
 let moversCache: { data: MoversData; ts: number } | null = null;
 const CACHE_TTL = 60_000;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapQuote(q: any): StockQuote {
+  return {
+    symbol: q.symbol,
+    name: q.longName || q.shortName || q.symbol,
+    price: q.regularMarketPrice ?? 0,
+    change: q.regularMarketChange ?? 0,
+    changePercent: q.regularMarketChangePercent ?? 0,
+    exchange: q.fullExchangeName || q.exchange || '',
+    currency: q.currency || 'USD',
+    marketState: q.marketState,
+    dayHigh: q.regularMarketDayHigh,
+    dayLow: q.regularMarketDayLow,
+    volume: q.regularMarketVolume,
+    previousClose: q.regularMarketPreviousClose,
+  };
+}
+
+async function fetchScreener(scrId: 'day_gainers' | 'day_losers', count = 10): Promise<StockQuote[]> {
+  const url = `${YF_BASE}/v1/finance/screener/predefined/saved?formatted=false&scrIds=${scrId}&count=${count}&start=0`;
+  const res = await fetch(url, { headers: HEADERS, next: { revalidate: 0 } });
+  if (!res.ok) throw new Error(`Yahoo screener (${scrId}) returned ${res.status}`);
+  const data = await res.json();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const quotes: any[] = data?.finance?.result?.[0]?.quotes ?? [];
+  return quotes.map(mapQuote);
+}
+
 async function buildMovers(): Promise<MoversData> {
-  const quotes = await getBatchQuotes(WATCHLIST);
-  const list = Array.from(quotes.values()).filter((q) => q.changePercent !== 0);
-  list.sort((a, b) => b.changePercent - a.changePercent);
-  const gainers = list.filter((q) => q.changePercent > 0).slice(0, 10);
-  const losers = list
-    .filter((q) => q.changePercent < 0)
-    .sort((a, b) => a.changePercent - b.changePercent)
-    .slice(0, 10);
+  const [gainers, losers] = await Promise.all([
+    fetchScreener('day_gainers', 10),
+    fetchScreener('day_losers', 10),
+  ]);
   return { gainers, losers, updatedAt: new Date().toISOString() };
 }
 
@@ -35,7 +53,13 @@ export async function GET() {
   if (moversCache && Date.now() - moversCache.ts < CACHE_TTL) {
     return NextResponse.json(moversCache.data);
   }
-  const data = await buildMovers();
-  moversCache = { data, ts: Date.now() };
-  return NextResponse.json(data);
+  try {
+    const data = await buildMovers();
+    moversCache = { data, ts: Date.now() };
+    return NextResponse.json(data);
+  } catch {
+    // Return stale cache on error rather than failing
+    if (moversCache) return NextResponse.json(moversCache.data);
+    return NextResponse.json({ gainers: [], losers: [], updatedAt: new Date().toISOString() });
+  }
 }
