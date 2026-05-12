@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import RoomCard from '@/components/room/RoomCard';
@@ -20,6 +20,14 @@ const FILTER_TABS: { value: Filter; label: string }[] = [
 ];
 
 export default function MyRoomsPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner className="py-20" />}>
+      <MyRoomsContent />
+    </Suspense>
+  );
+}
+
+function MyRoomsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialFilter = (searchParams.get('filter') as Filter) ?? 'active';
@@ -87,7 +95,7 @@ export default function MyRoomsPage() {
       </div>
 
       {/* Filter tabs */}
-      <div className="flex items-center gap-1 bg-surface-raised border border-border rounded-xl p-1 w-fit mb-6">
+      <div className="flex items-center gap-1 bg-surface-raised border border-border rounded-xl p-1 w-fit mb-6 overflow-x-auto max-w-full">
         {FILTER_TABS.map((tab) => (
           <button
             key={tab.value}

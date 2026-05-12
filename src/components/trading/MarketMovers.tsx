@@ -106,25 +106,25 @@ function MoverTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
-              <th className="text-left text-muted font-medium py-2 px-2 text-xs">#</th>
+              <th className="text-left text-muted font-medium py-2 px-1 text-xs w-5">#</th>
               <th className="text-left text-muted font-medium py-2 px-2 text-xs">Symbol</th>
               <th className="text-right text-muted font-medium py-2 px-2 text-xs">Price</th>
-              <th className="text-right text-muted font-medium py-2 px-2 text-xs">Change</th>
+              <th className="text-right text-muted font-medium py-2 px-2 text-xs hidden sm:table-cell">Change</th>
               <th className="text-right text-muted font-medium py-2 px-2 text-xs">%</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((q, i) => (
               <tr key={q.symbol} className="border-b border-border/40 hover:bg-surface-raised/50 transition-colors">
-                <td className="py-2.5 px-2 text-muted text-xs">{i + 1}</td>
+                <td className="py-2.5 px-1 text-muted text-xs">{i + 1}</td>
                 <td className="py-2.5 px-2">
                   <p className="font-mono font-semibold text-foreground text-xs">{q.symbol}</p>
-                  <p className="text-muted text-[10px] truncate max-w-[100px]">{q.name}</p>
+                  <p className="text-muted text-[10px] truncate max-w-[90px]">{q.name}</p>
                 </td>
                 <td className="py-2.5 px-2 text-right font-mono text-foreground text-xs">
                   {format(q.price)}
                 </td>
-                <td className={`py-2.5 px-2 text-right font-mono text-xs ${accent}`}>
+                <td className={`py-2.5 px-2 text-right font-mono text-xs hidden sm:table-cell ${accent}`}>
                   {q.change >= 0 ? '+' : ''}{format(q.change)}
                 </td>
                 <td className={`py-2.5 px-2 text-right font-mono font-semibold text-xs ${accent}`}>

@@ -48,6 +48,13 @@ export default function PortfolioPage() {
     setSellHolding(null);
   }
 
+  function openSellPanel(h: Holding) {
+    setSellHolding(h);
+    setTimeout(() => {
+      document.getElementById('sell-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  }
+
   function handlePendingOrderPlaced(order: PendingOrder, newBalance: number) {
     setPendingOrders((prev) => [...prev, order]);
     setPortfolio((prev) => prev ? { ...prev, cashBalance: newBalance } : prev);
@@ -102,7 +109,7 @@ export default function PortfolioPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Holdings */}
-        <div className={sellHolding ? 'lg:col-span-2' : 'lg:col-span-3'}>
+        <div className={sellHolding ? 'lg:col-span-2' : 'lg:col-span-3'} id="holdings">
           <div className="bg-surface border border-border rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-medium text-foreground">Holdings</h2>
@@ -113,7 +120,7 @@ export default function PortfolioPage() {
             <PortfolioTable
               holdings={portfolio.holdings}
               canTrade={true}
-              onSell={(h) => setSellHolding(h)}
+              onSell={openSellPanel}
               stopLosses={stopLosses}
               onCancelStopLoss={cancelStopLoss}
             />
@@ -151,9 +158,9 @@ export default function PortfolioPage() {
           )}
         </div>
 
-        {/* Sell panel */}
+        {/* Sell panel — full width on mobile, sidebar on desktop */}
         {sellHolding && (
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1" id="sell-panel">
             <TradeForm
               roomId={roomId}
               stock={{ symbol: sellHolding.symbol, name: sellHolding.companyName, exchange: sellHolding.exchange, type: 'EQUITY' }}

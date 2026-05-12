@@ -87,12 +87,19 @@ export default function TradePage() {
       <RoomNav roomId={roomId} isMember={true} />
 
       {portfolio && (
-        <div className="flex justify-end mb-6">
+        <div className="flex items-center justify-between bg-surface border border-border rounded-2xl px-4 py-3 mb-6">
+          <div>
+            <p className="text-xs text-muted">Portfolio Value</p>
+            <p className="font-mono font-semibold text-foreground">{format(portfolio.totalValue)}</p>
+          </div>
           <div className="text-right">
             <p className="text-xs text-muted">Available Cash</p>
-            <p className="font-mono text-xl font-bold text-foreground">{format(portfolio.cashBalance)}</p>
-            <p className={`text-xs font-mono mt-0.5 ${portfolio.totalReturnPercent >= 0 ? 'text-success' : 'text-danger'}`}>
-              Portfolio: {format(portfolio.totalValue)} ({portfolio.totalReturnPercent >= 0 ? '+' : ''}{portfolio.totalReturnPercent.toFixed(2)}%)
+            <p className="font-mono font-bold text-foreground">{format(portfolio.cashBalance)}</p>
+          </div>
+          <div className="text-right hidden sm:block">
+            <p className="text-xs text-muted">Total Return</p>
+            <p className={`font-mono text-sm font-semibold ${portfolio.totalReturnPercent >= 0 ? 'text-success' : 'text-danger'}`}>
+              {portfolio.totalReturnPercent >= 0 ? '+' : ''}{portfolio.totalReturnPercent.toFixed(2)}%
             </p>
           </div>
         </div>

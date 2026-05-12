@@ -57,25 +57,36 @@ export default function Leaderboard({ roomId }: { roomId: string }) {
               : 'bg-surface-raised border-border hover:border-border'
           }`}
         >
-          <div className="flex items-center justify-center w-10 shrink-0">
+          <div className="flex items-center justify-center w-8 shrink-0">
             <Medal rank={entry.rank} />
           </div>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="font-semibold text-foreground truncate">{entry.displayName}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="font-semibold text-foreground text-sm truncate">{entry.displayName}</p>
               {entry.isCurrentUser && (
                 <span className="text-xs bg-primary/20 text-primary-light px-2 py-0.5 rounded-full border border-primary/30">you</span>
               )}
             </div>
-            <p className="text-xs text-muted mt-0.5">{entry.tradeCount} trade{entry.tradeCount !== 1 ? 's' : ''}</p>
+            <div className="flex items-center gap-2 flex-wrap mt-0.5">
+              <p className="text-xs text-muted">{entry.tradeCount} trade{entry.tradeCount !== 1 ? 's' : ''}</p>
+              {/* Return shown inline on mobile */}
+              <p className={`font-mono text-xs font-semibold sm:hidden ${entry.returnPercent >= 0 ? 'text-success' : 'text-danger'}`}>
+                {entry.returnPercent >= 0 ? '+' : ''}{formatPercent(entry.returnPercent)}
+              </p>
+            </div>
           </div>
 
-          <div className="text-right shrink-0">
-            <p className="font-mono font-semibold text-foreground">{format(entry.totalValue)}</p>
+          <div className="text-right shrink-0 hidden sm:block">
+            <p className="font-mono font-semibold text-foreground text-sm">{format(entry.totalValue)}</p>
             <p className={`font-mono text-xs mt-0.5 ${entry.returnPercent >= 0 ? 'text-success' : 'text-danger'}`}>
               {formatPercent(entry.returnPercent)} ({entry.returnPercent >= 0 ? '+' : ''}{format(entry.returnAmount)})
             </p>
+          </div>
+
+          {/* Mobile: value + percent stacked */}
+          <div className="text-right shrink-0 sm:hidden">
+            <p className="font-mono font-semibold text-foreground text-sm">{format(entry.totalValue)}</p>
           </div>
         </div>
       ))}

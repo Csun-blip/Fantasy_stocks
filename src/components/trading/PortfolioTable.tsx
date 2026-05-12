@@ -39,12 +39,12 @@ export default function PortfolioTable({ holdings, onSell, canTrade, stopLosses 
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border">
-            <th className="text-left text-muted font-medium py-3 px-2">Stock</th>
-            <th className="text-right text-muted font-medium py-3 px-2">Shares</th>
-            <th className="text-right text-muted font-medium py-3 px-2">Avg Cost</th>
-            <th className="text-right text-muted font-medium py-3 px-2">Price</th>
-            <th className="text-right text-muted font-medium py-3 px-2">Value</th>
-            <th className="text-right text-muted font-medium py-3 px-2">P&L</th>
+            <th className="text-left text-muted font-medium py-3 px-2 text-xs">Stock</th>
+            <th className="text-right text-muted font-medium py-3 px-2 text-xs">Shares</th>
+            <th className="text-right text-muted font-medium py-3 px-2 text-xs hidden sm:table-cell">Avg Cost</th>
+            <th className="text-right text-muted font-medium py-3 px-2 text-xs">Price</th>
+            <th className="text-right text-muted font-medium py-3 px-2 text-xs hidden sm:table-cell">Value</th>
+            <th className="text-right text-muted font-medium py-3 px-2 text-xs">P&L</th>
             {canTrade && <th className="py-3 px-2" />}
           </tr>
         </thead>
@@ -80,14 +80,14 @@ export default function PortfolioTable({ holdings, onSell, canTrade, stopLosses 
                     </Badge>
                   </div>
                 </td>
-                <td className="py-3 px-2 text-right font-mono text-foreground">{h.quantity.toLocaleString()}</td>
-                <td className="py-3 px-2 text-right font-mono text-muted">{format(h.avgCost)}</td>
-                <td className="py-3 px-2 text-right font-mono text-foreground">{format(h.currentPrice)}</td>
-                <td className="py-3 px-2 text-right font-mono font-semibold text-foreground">{format(h.marketValue)}</td>
+                <td className="py-3 px-2 text-right font-mono text-foreground text-xs">{h.quantity.toLocaleString()}</td>
+                <td className="py-3 px-2 text-right font-mono text-muted text-xs hidden sm:table-cell">{format(h.avgCost)}</td>
+                <td className="py-3 px-2 text-right font-mono text-foreground text-xs">{format(h.currentPrice)}</td>
+                <td className="py-3 px-2 text-right font-mono font-semibold text-foreground text-xs hidden sm:table-cell">{format(h.marketValue)}</td>
                 <td className="py-3 px-2 text-right">
                   <div className={h.gainLoss >= 0 ? 'text-success' : 'text-danger'}>
-                    <p className="font-mono text-xs">{format(h.gainLoss)}</p>
-                    <p className="font-mono text-xs">{formatPercent(h.gainLossPercent)}</p>
+                    <p className="font-mono text-xs hidden sm:block">{format(h.gainLoss)}</p>
+                    <p className="font-mono text-xs font-semibold">{formatPercent(h.gainLossPercent)}</p>
                   </div>
                 </td>
                 {canTrade && (

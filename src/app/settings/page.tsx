@@ -101,7 +101,7 @@ export default function SettingsPage() {
           All portfolio values, prices, and totals will be displayed in your chosen currency.
           Stock data is sourced in USD — this changes the display symbol only.
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mb-4">
           {CURRENCIES.map((c) => (
             <button
               key={c.code}
