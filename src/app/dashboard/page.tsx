@@ -100,7 +100,7 @@ export default async function DashboardPage() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
                 {activePreview.map((room) => (
                   <RoomCard key={room.id} room={room as any} />
                 ))}
@@ -134,7 +134,7 @@ export default async function DashboardPage() {
                   See all →
                 </Link>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
                 {endedRooms.slice(0, 3).map((room) => (
                   <RoomCard key={room.id} room={room as any} />
                 ))}

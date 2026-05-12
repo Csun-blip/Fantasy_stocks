@@ -73,7 +73,7 @@ export default function RoomsPage() {
                   See all →
                 </Link>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
                 {myRooms.map((room) => (
                   <div key={room.id} className="relative">
                     {room.isCreator && (
@@ -110,7 +110,7 @@ export default function RoomsPage() {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
                 {browseRooms.map((room) => (
                   <RoomCard key={room.id} room={room} />
                 ))}

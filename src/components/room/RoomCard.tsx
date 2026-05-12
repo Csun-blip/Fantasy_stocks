@@ -11,11 +11,14 @@ export default function RoomCard({ room }: { room: RoomWithMeta }) {
   const active = room.isActive;
 
   return (
-    <div className="bg-surface border border-border rounded-2xl p-5 hover:border-primary/40 transition-all duration-200 flex flex-col gap-4">
+    <div className="bg-surface border border-border rounded-2xl p-5 hover:border-primary/40 transition-all duration-200 flex flex-col gap-4 h-full">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-foreground truncate">{room.name}</h3>
-          {room.description && <p className="text-sm text-muted mt-0.5 line-clamp-2">{room.description}</p>}
+          {/* Always reserve 2-line height so cards align regardless of description */}
+          <p className="text-sm text-muted mt-0.5 line-clamp-2 min-h-[2.5rem]">
+            {room.description ?? ''}
+          </p>
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           <Badge variant={active ? 'green' : 'gray'}>{active ? 'Active' : 'Ended'}</Badge>
