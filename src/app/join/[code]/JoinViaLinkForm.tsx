@@ -2,17 +2,18 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface Props {
   roomId: string;
   inviteCode: string;
   startingCash: number;
   hasStarted: boolean;
-  fmt: (n: number) => string;
 }
 
-export default function JoinViaLinkForm({ roomId, inviteCode, startingCash, hasStarted, fmt }: Props) {
+export default function JoinViaLinkForm({ roomId, inviteCode, startingCash, hasStarted }: Props) {
   const router = useRouter();
+  const { format } = useCurrency();
   const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -38,7 +39,7 @@ export default function JoinViaLinkForm({ roomId, inviteCode, startingCash, hasS
     <div className="flex flex-col gap-3">
       {hasStarted && (
         <div className="bg-warning/10 border border-warning/30 rounded-xl p-3 text-xs text-warning">
-          Competition is already in progress. You&apos;ll join with {fmt(startingCash)} and can start trading immediately.
+          Competition is already in progress. You&apos;ll join with {format(startingCash)} and can start trading immediately.
         </div>
       )}
 
@@ -66,7 +67,7 @@ export default function JoinViaLinkForm({ roomId, inviteCode, startingCash, hasS
         disabled={loading}
         className="w-full bg-primary hover:bg-primary-hover disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition-colors text-sm"
       >
-        {loading ? 'Joining…' : `Join & Start with ${fmt(startingCash)}`}
+        {loading ? 'Joining…' : `Join & Start with ${format(startingCash)}`}
       </button>
     </div>
   );

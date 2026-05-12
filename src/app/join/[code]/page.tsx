@@ -11,7 +11,7 @@ import JoinViaLinkForm from './JoinViaLinkForm';
 export default async function JoinViaLinkPage({ params }: { params: { code: string } }) {
   const session = await getServerSession(authOptions);
   const currency = cookies().get('fs_currency')?.value ?? 'USD';
-  const fmt = (n: number) => formatCurrency(n, currency);
+  const fmt = (n: number) => formatCurrency(n, currency); // server-side only for static display
 
   const room = await prisma.room.findUnique({
     where: { inviteCode: params.code.toUpperCase() },
@@ -77,7 +77,7 @@ export default async function JoinViaLinkPage({ params }: { params: { code: stri
               This room has already ended and is no longer accepting new players.
             </div>
           ) : (
-            <JoinViaLinkForm roomId={room.id} inviteCode={params.code} startingCash={room.startingCash} hasStarted={hasStarted} fmt={fmt} />
+            <JoinViaLinkForm roomId={room.id} inviteCode={params.code} startingCash={room.startingCash} hasStarted={hasStarted} />
           )}
         </div>
       </div>
