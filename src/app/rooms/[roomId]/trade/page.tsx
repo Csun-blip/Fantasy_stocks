@@ -10,13 +10,14 @@ import PortfolioTable from '@/components/trading/PortfolioTable';
 import PriceChart from '@/components/trading/PriceChart';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { useCurrency } from '@/context/CurrencyContext';
-import type { StockSearchResult, PortfolioSummary, Holding, PendingOrder } from '@/types';
+import type { StockSearchResult, PortfolioSummary, Holding, PendingOrder, StopLossOrder } from '@/types';
 
 export default function TradePage() {
   const { format } = useCurrency();
   const { roomId } = useParams<{ roomId: string }>();
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
   const [pendingOrders, setPendingOrders] = useState<PendingOrder[]>([]);
+  const [stopLosses, setStopLosses] = useState<StopLossOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStock, setSelectedStock] = useState<StockSearchResult | null>(null);
   const [sellHolding, setSellHolding] = useState<Holding | null>(null);
@@ -32,10 +33,16 @@ export default function TradePage() {
     if (res.ok) setPendingOrders(await res.json());
   }, [roomId]);
 
+  const fetchStopLosses = useCallback(async () => {
+    const res = await fetch(`/api/rooms/${roomId}/stop-loss`);
+    if (res.ok) setStopLosses(await res.json());
+  }, [roomId]);
+
   useEffect(() => {
     fetchPortfolio();
     fetchPending();
-  }, [fetchPortfolio, fetchPending]);
+    fetchStopLosses();
+  }, [fetchPortfolio, fetchPending, fetchStopLosses]);
 
   function handleTradeSuccess(newBalance: number) {
     setPortfolio((prev) => prev ? { ...prev, cashBalance: newBalance } : prev);
@@ -55,6 +62,18 @@ export default function TradePage() {
   async function cancelOrder(id: string) {
     const res = await fetch(`/api/rooms/${roomId}/pending-orders/${id}`, { method: 'DELETE' });
     if (res.ok) setPendingOrders((prev) => prev.filter((o) => o.id !== id));
+  }
+
+  async function cancelStopLoss(id: string) {
+    const res = await fetch(`/api/rooms/${roomId}/stop-loss/${id}`, { method: 'DELETE' });
+    if (res.ok) setStopLosses((prev) => prev.filter((s) => s.id !== id));
+  }
+
+  function handleStopLossSet(sl: StopLossOrder) {
+    setStopLosses((prev) => {
+      const filtered = prev.filter((s) => s.symbol !== sl.symbol);
+      return [...filtered, sl];
+    });
   }
 
   if (loading) return <LoadingSpinner className="py-20" />;
@@ -99,8 +118,10 @@ export default function TradePage() {
               cashBalance={portfolio.cashBalance}
               onSuccess={handleTradeSuccess}
               onPendingOrder={handlePendingOrderPlaced}
+              onStopLossSet={handleStopLossSet}
               onCancel={() => { setSelectedStock(null); setSellHolding(null); }}
               ownedShares={portfolio.holdings.find((h) => h.symbol === selectedStock.symbol)?.quantity ?? 0}
+              existingStopLoss={stopLosses.find((s) => s.symbol === selectedStock.symbol) ?? null}
             />
           )}
 
@@ -163,6 +184,8 @@ export default function TradePage() {
                 holdings={portfolio.holdings}
                 onSell={handleSell}
                 canTrade={true}
+                stopLosses={stopLosses}
+                onCancelStopLoss={cancelStopLoss}
               />
             )}
           </div>

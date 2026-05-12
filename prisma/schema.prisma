@@ -19,6 +19,7 @@ model User {
   messages       ChatMessage[]
   resetTokens    PasswordResetToken[]
   pendingOrders  PendingOrder[]
+  stopLossOrders StopLossOrder[]
 }
 
 model PasswordResetToken {
@@ -49,6 +50,7 @@ model Room {
   trades         Trade[]
   messages       ChatMessage[]
   pendingOrders  PendingOrder[]
+  stopLossOrders StopLossOrder[]
 }
 
 model RoomMember {
@@ -96,6 +98,24 @@ model ChatMessage {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([roomId, createdAt])
+}
+
+model StopLossOrder {
+  id           String   @id @default(cuid())
+  roomId       String
+  userId       String
+  symbol       String
+  companyName  String
+  exchange     String
+  quantity     Int
+  triggerPrice Float
+  createdAt    DateTime @default(now())
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId, symbol])
+  @@index([roomId, userId])
 }
 
 model PendingOrder {

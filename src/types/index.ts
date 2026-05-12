@@ -95,6 +95,16 @@ export interface PendingOrder {
   createdAt: string;
 }
 
+export interface StopLossOrder {
+  id: string;
+  symbol: string;
+  companyName: string;
+  exchange: string;
+  quantity: number;
+  triggerPrice: number;
+  createdAt: string;
+}
+
 export interface PriceHistoryPoint {
   date: string;
   close: number;

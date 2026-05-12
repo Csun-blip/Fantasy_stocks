@@ -9,13 +9,14 @@ import TradeForm from '@/components/trading/TradeForm';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { formatPercent } from '@/lib/utils';
 import { useCurrency } from '@/context/CurrencyContext';
-import type { PortfolioSummary, Holding, PendingOrder } from '@/types';
+import type { PortfolioSummary, Holding, PendingOrder, StopLossOrder } from '@/types';
 
 export default function PortfolioPage() {
   const { format } = useCurrency();
   const { roomId } = useParams<{ roomId: string }>();
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
   const [pendingOrders, setPendingOrders] = useState<PendingOrder[]>([]);
+  const [stopLosses, setStopLosses] = useState<StopLossOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [sellHolding, setSellHolding] = useState<Holding | null>(null);
 
@@ -30,10 +31,16 @@ export default function PortfolioPage() {
     if (res.ok) setPendingOrders(await res.json());
   }, [roomId]);
 
+  const fetchStopLosses = useCallback(async () => {
+    const res = await fetch(`/api/rooms/${roomId}/stop-loss`);
+    if (res.ok) setStopLosses(await res.json());
+  }, [roomId]);
+
   useEffect(() => {
     fetchPortfolio();
     fetchPending();
-  }, [fetchPortfolio, fetchPending]);
+    fetchStopLosses();
+  }, [fetchPortfolio, fetchPending, fetchStopLosses]);
 
   function handleSellSuccess(newBalance: number) {
     setPortfolio((prev) => prev ? { ...prev, cashBalance: newBalance } : prev);
@@ -50,6 +57,18 @@ export default function PortfolioPage() {
   async function cancelOrder(id: string) {
     const res = await fetch(`/api/rooms/${roomId}/pending-orders/${id}`, { method: 'DELETE' });
     if (res.ok) setPendingOrders((prev) => prev.filter((o) => o.id !== id));
+  }
+
+  async function cancelStopLoss(id: string) {
+    const res = await fetch(`/api/rooms/${roomId}/stop-loss/${id}`, { method: 'DELETE' });
+    if (res.ok) setStopLosses((prev) => prev.filter((s) => s.id !== id));
+  }
+
+  function handleStopLossSet(sl: StopLossOrder) {
+    setStopLosses((prev) => {
+      const filtered = prev.filter((s) => s.symbol !== sl.symbol);
+      return [...filtered, sl];
+    });
   }
 
   if (loading) return <LoadingSpinner className="py-20" />;
@@ -95,6 +114,8 @@ export default function PortfolioPage() {
               holdings={portfolio.holdings}
               canTrade={true}
               onSell={(h) => setSellHolding(h)}
+              stopLosses={stopLosses}
+              onCancelStopLoss={cancelStopLoss}
             />
           </div>
 
@@ -139,8 +160,10 @@ export default function PortfolioPage() {
               cashBalance={portfolio.cashBalance}
               onSuccess={handleSellSuccess}
               onPendingOrder={handlePendingOrderPlaced}
+              onStopLossSet={handleStopLossSet}
               onCancel={() => setSellHolding(null)}
               ownedShares={sellHolding.quantity}
+              existingStopLoss={stopLosses.find((s) => s.symbol === sellHolding.symbol) ?? null}
             />
           </div>
         )}
